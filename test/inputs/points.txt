@@ -1,0 +1,5 @@
+(Node (index 1) (point [p1]))
+(Node (index 2) (point [p2]))
+(Node (index 3) (point [p3]))
+(Node (index 4) (point [p4]))
+(Node (index 5) (point [p5]))

@@ -1,0 +1,4 @@
+(IsFather (father "Adam") (son "Seth"))
+(IsFather (father "Seth") (son "Enos"))
+(IsFather (father "Enos") (son "Kenan"))
+(IsFather (father "Kenan") (son "Mahalalel"))

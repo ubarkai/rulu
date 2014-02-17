@@ -1,0 +1,6 @@
+(IsGrandfather (grandfather "Adam") (grandson "Enos") (great 0))
+(IsGrandfather (grandfather "Adam") (grandson "Kenan") (great 1))
+(IsGrandfather (grandfather "Adam") (grandson "Mahalalel") (great 2))
+(IsGrandfather (grandfather "Seth") (grandson "Kenan") (great 0))
+(IsGrandfather (grandfather "Seth") (grandson "Mahalalel") (great 1))
+(IsGrandfather (grandfather "Enos") (grandson "Mahalalel") (great 0))
