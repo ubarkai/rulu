@@ -4,12 +4,12 @@ from rulu import *
 def error():
     raise RuntimeError
 
-class IsFather(Fact):
+class IsFatherOf(Fact):
     father = StringField()
     son = StringField()
 
 
-IsGrandfather = RuleDef(
-    match(IsFather[0].son, IsFather[1].father),
-    action(Assert(grandfather=IsFather[0].father, grandson=IsFather[1].son, great=error()))
+IsGrandFatherOf = RuleDef(
+    match(IsFatherOf[0].son, IsFatherOf[1].father),
+    action(Assert(grandfather=IsFatherOf[0].father, grandson=IsFatherOf[1].son, greatness=error()))
 )

@@ -1,22 +1,22 @@
 from rulu import *
 
-class IsFather(Fact):
+class IsFatherOf(Fact):
     father = StringField()
     son = StringField()
 
-IsGrandfather = RuleDef(
-    fields(grandfather=String, grandson=String, great=Integer),
-    match(IsFather[0].son, IsFather[1].father)
+IsGrandfatherOf = RuleDef(
+    fields(grandfather=String, grandson=String, greatness=Integer),
+    match(IsFatherOf[0].son, IsFatherOf[1].father)
 )
 
-@IsGrandfather._python_action
-def action(assert_, IsFather):
-    assert_(grandfather=IsFather[0].father, grandson=IsFather[1].son, great=0)
+@IsGrandfatherOf._python_action
+def action(assert_, IsFatherOf):
+    assert_(grandfather=IsFatherOf[0].father, grandson=IsFatherOf[1].son, greatness=0)
 
-GreatGrandfather = RuleDef(
-    target(IsGrandfather),
-    match(IsFather.son, IsGrandfather.grandfather)
+greatnessGrandfather = RuleDef(
+    target(IsGrandfatherOf),
+    match(IsFatherOf.son, IsGrandfatherOf.grandfather)
 )
-@GreatGrandfather._python_action
-def action2(assert_, IsFather, IsGrandfather):
-    assert_(grandfather=IsFather.father, grandson=IsGrandfather.grandson, great=IsGrandfather.great+1)
+@greatnessGrandfather._python_action
+def action2(assert_, IsFatherOf, IsGrandfatherOf):
+    assert_(grandfather=IsFatherOf.father, grandson=IsGrandfatherOf.grandson, greatness=IsGrandfatherOf.greatness+1)

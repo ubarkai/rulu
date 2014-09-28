@@ -12,17 +12,17 @@ def increment(x):
 def take_father(x):
     return x.father
 
-class IsFather(Fact):
+class IsFatherOf(Fact):
     father = StringField()
     son = StringField()
 
-IsGrandfather = RuleDef(
-    match(IsFather[0].son, IsFather[1].father),
-    action(Assert(grandfather=IsFather[0].father, grandson=IsFather[1].son, great=zero()))
+IsGrandfatherOf = RuleDef(
+    match(IsFatherOf[0].son, IsFatherOf[1].father),
+    action(Assert(grandfather=IsFatherOf[0].father, grandson=IsFatherOf[1].son, greatness=zero()))
 )
 
 RuleDef(
-    target(IsGrandfather),
-    match(IsFather.son, IsGrandfather.grandfather),
-    action(Assert(grandfather=take_father(IsFather), grandson=IsGrandfather.grandson, great=increment(IsGrandfather.great)))
+    target(IsGrandfatherOf),
+    match(IsFatherOf.son, IsGrandfatherOf.grandfather),
+    action(Assert(grandfather=take_father(IsFatherOf), grandson=IsGrandfatherOf.grandson, greatness=increment(IsGrandfatherOf.greatness)))
 )
