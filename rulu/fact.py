@@ -4,6 +4,8 @@ from slots import HasSlots, SlotsMeta
 from expr import BaseExpr, ConvertibleToExpr
 from utils import Printable, wrap_clips_errors
 
+RULU_INTERNAL_PREFIX = '_rulu_internal'
+
 class FactReference(ConvertibleToExpr):
     def _update_python_param(self, params, value):
         raise NotImplementedError

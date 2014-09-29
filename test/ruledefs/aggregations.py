@@ -18,9 +18,9 @@ class SumByFirstAgg(Aggregator):
     def process_one(self, Pair):
         self.data[Pair.first] += Pair.second
         
-    def finalize(self):
+    def finalize(self, assert_):
         for first, total in self.data.iteritems():
-            self.assert_(first=first, value=total)
+            assert_(first=first, value=total)
 
 MaxByFirst = RuleDef(
     fields(first=Integer, value=Integer),

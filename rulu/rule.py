@@ -1,8 +1,9 @@
 from collections import defaultdict
 from functools import partial
 
-from expr import FieldExpr, VariableExpr
-from fact import Fact, FactExpr
+from actions import Assert
+from expr import FieldExpr, VariableExpr, IntegerField
+from fact import Fact, FactExpr, RULU_INTERNAL_PREFIX
 from func import RuleFunc
 from operators import Condition
 from slots import make_slotted_type
@@ -188,8 +189,22 @@ class Rule(object):
         for aggregator_cls in self.aggregator_classes:
             aggregator = aggregator_cls(engine=engine, template=self.target)
             engine.preprocess_funcs.append(aggregator.init)
-            engine.postprocess_funcs.append(aggregator.finalize)
             self.add_python_action(lambda assert_, **kwargs : aggregator.process_one(**kwargs))
+            finalize_name = '{}_{}_finalize'.format(RULU_INTERNAL_PREFIX, self.name)
+            finalize_fact_cls = type(Fact)(finalize_name, (Fact, ), {'x': IntegerField()})
+            finalize_fact_cls._build(engine)
+            target = self.target
+            self.target = finalize_fact_cls
+            if self.salience is None: self.salience = -1000
+            self.add_action(Assert(x=0))
+            finalize_rule = Rule()
+            finalize_rule.set_name(finalize_name)
+            finalize_rule.set_premise(finalize_fact_cls)
+            finalize_rule.set_salience(self.salience)
+            finalize_rule.set_target(target)
+            self.set_salience((self.salience)+1)
+            finalize_rule.add_python_action(lambda assert_, **kwargs: aggregator.finalize(assert_))
+            finalize_rule.build(engine)
             
     def _add_python_action(self, engine, target_name):
         func = RuleFunc(partial(self._action, engine), Integer, 'target_{}'.format(target_name))

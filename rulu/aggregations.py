@@ -3,23 +3,22 @@ from collections import defaultdict
 
 from expr import FieldExpr
 from fact import FactReference
+from utils import RuleEngineError
 
 class Aggregator(object):
     def __init__(self, engine, template):
         self.engine = engine
         self.template = template
+        self.finalized = False
         
     def init(self):
         pass
     
-    def finalize(self):
-        pass
+    def finalize(self, assert_):
+        self.finalized = True
     
     def process_one(self, **kwargs):
         raise NotImplementedError
-
-    def assert_(self, **kwargs):
-        self.engine.assert_(self.template, **kwargs)
 
 def groupby(keys, func):
     keys = tuple(_make_key(key) for key in keys)
@@ -28,13 +27,16 @@ def groupby(keys, func):
             self.data = defaultdict(lambda : [])
             
         def process_one(self, **kwargs):
+            if self.finalized:
+                raise RuleEngineError('Aggregation failed')
             key = tuple(key(**kwargs) for key in keys)
             value = kwargs.values()[0] if len(kwargs) == 1 else Bunch(kwargs)
             self.data[key].append(value)
             
-        def finalize(self): 
+        def finalize(self, assert_):
+            super(GroupAggregator, self).finalize(assert_)
             for key, group in self.data.iteritems():
-                func(group, self.assert_, *key)
+                func(group, assert_, *key)
         
     return GroupAggregator
 

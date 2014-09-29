@@ -1,6 +1,7 @@
 import clips
 import os
 from def_module_loader import DefModuleLoader
+from fact import RULU_INTERNAL_PREFIX
 from func import RuleFunc
 from utils import RuleEngineError, logger
 
@@ -57,7 +58,8 @@ class RuleEngine(object):
         Return an interator over all known facts
         """
         return (self._wrap_clips_instance(fact) for fact in self.environment.FactList()
-                if fact.Relation != 'initial-fact')
+                if fact.Relation != 'initial-fact' 
+                and not fact.Relation.startswith(RULU_INTERNAL_PREFIX))
     
     def clear(self):
         self.environment.Clear()
