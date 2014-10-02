@@ -20,7 +20,7 @@ class Aggregator(object):
     def process_one(self, **kwargs):
         raise NotImplementedError
 
-def groupby(keys, func):
+def grouping_aggregator(keys, func):
     keys = tuple(_make_key(key) for key in keys)
     class GroupAggregator(Aggregator):
         def init(self): 

@@ -10,8 +10,7 @@ SumByFirst = RuleDef(
 
 add_to_sum = RuleDef(
     match(SumByFirst[0].first, SumByFirst[1].first),
-    condition(clips_funcs.fact_index(SumByFirst[0]) != 
-              clips_funcs.fact_index(SumByFirst[1]))
+    condition(fact_index(SumByFirst[0]) != fact_index(SumByFirst[1]))
 )
 
 @add_to_sum._python_action

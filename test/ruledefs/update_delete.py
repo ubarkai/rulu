@@ -11,8 +11,7 @@ SumByFirst = RuleDef(
 
 RuleDef(
     match(SumByFirst[0].first, SumByFirst[1].first),
-    condition(clips_funcs.fact_index(SumByFirst[0]) != 
-              clips_funcs.fact_index(SumByFirst[1])),
+    condition(fact_index(SumByFirst[0]) != fact_index(SumByFirst[1])),
     action(Update(SumByFirst[0], value=SumByFirst[0].value + SumByFirst[1].value)),
     action(Delete(SumByFirst[1]))
 )

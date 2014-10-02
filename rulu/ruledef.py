@@ -1,7 +1,7 @@
 from bunch import Bunch
 from functools import wraps
 
-from aggregations import groupby
+from aggregations import grouping_aggregator
 from expr import ConvertibleToExpr
 from fact import FactReference
 from rule import Rule
@@ -29,7 +29,7 @@ class RuleDef(FactReference, ConvertibleToExpr):
         self._rule.add_aggregator_cls(aggregator_cls)
         
     def _groupby(self, *keys):
-        return lambda func : self._rule.add_aggregator_cls(groupby(keys, func))
+        return lambda func : self._rule.add_aggregator_cls(grouping_aggregator(keys, func))
     
     def __getitem__(self, key):
         return self._rule.target[key]
@@ -60,6 +60,7 @@ fields = rule_modifier(Rule.set_target_fields)
 salience = rule_modifier(Rule.set_salience)
 name = rule_modifier(Rule.set_name)
 description = rule_modifier(Rule.set_description)
+groupby = rule_modifier(Rule.set_groupby)
 
 @rule_modifier
 def target(rule, target):

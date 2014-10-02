@@ -139,7 +139,10 @@ class ClipsFuncExpr(BaseExpr):
         return self.return_type
         
     def to_lisp(self):
-        return LispExpr(self.func_name, *(arg.to_lisp() for arg in self.args))
+        if not self.args:
+            return '({})'.format(self.func_name)
+        else:
+            return LispExpr(self.func_name, *(arg.to_lisp() for arg in self.args))
     
     def replace_fields(self, field_map):
         args = [arg.replace_fields(field_map) for arg in self.args]

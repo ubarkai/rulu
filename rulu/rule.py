@@ -55,6 +55,8 @@ class Rule(object):
         self.actions = []
         self.python_actions = []
         self.aggregator_classes = []
+        self.groupby = {}
+        self.secondary_rules = []
         self.num_functions = 0
         self.comments = None
         
@@ -151,6 +153,15 @@ class Rule(object):
 
     def set_negative_premise(self, container):
         self.set_premise(container).set_negative()
+        
+    def set_groupby(self, **kwargs):
+        for value in kwargs.itervalues():
+            if not isinstance(value, FieldExpr):
+                raise RuleEngineError('Groupby is only supported for fact fields')
+        self.groupby.update(kwargs)
+        
+    def add_secondary_rule(self, rule):
+        self.secondary_rules.append(rule)
             
     def _replace_variable(self, prev_var_name, var_name):
         # TODO: Implement this
@@ -173,6 +184,8 @@ class Rule(object):
         logger.getChild('rule').debug('Creating rule: %s\n<%s\n%s\n%s>\n%s', 
                 self.clips_name, '='*20, lhs, '='*20, rhs)
         self.clips_rule = engine.environment.BuildRule(self.clips_name, lhs, rhs, self.comments)
+        for secondary_rule in self.secondary_rules:
+            secondary_rule.build(engine)
 
     def _init_target(self, engine):
         target_name = self.get_target_name()
@@ -186,6 +199,7 @@ class Rule(object):
             self.target._build(engine)
         
     def _init_aggregators(self, engine):
+        # TODO: Move this to separate module with secondary rule
         for aggregator_cls in self.aggregator_classes:
             aggregator = aggregator_cls(engine=engine, template=self.target)
             engine.preprocess_funcs.append(aggregator.init)

@@ -83,6 +83,9 @@ class Unicode(RuleEngineType):
     def _from_clips_value(cls, x):
         return x.decode(cls.ENCODING)
     
+class Symbol(String):
+    CLIPS_TYPE = 'SYMBOL'
+    
 class DateTime(RuleEngineType):
     """
     Date-time object. 

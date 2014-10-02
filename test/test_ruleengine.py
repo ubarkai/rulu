@@ -1,6 +1,10 @@
+import sys
+sys.path[:0] = ['/Users/ubarkai/repos/rulu']
+
 import logging
 from pkg_resources import resource_filename  # @UnresolvedImport
 from unittest import TestCase
+from rulu.builtin_aggregations import UNIQUE_INDEX_FIELD
 from rulu.engine import RuleEngine
 from rulu.slots import HasSlots
 
@@ -31,8 +35,11 @@ class RuleEngineTests(TestCase):
             self._engine_test(ruledef='family_python_error', input='fathers.txt', expected_output=None)
         self.assertRaises(RuntimeError, testWithError)
         
-    def testAggregator(self):
-        self._engine_test(ruledef='aggregations', input='pairs.txt', expected_output='aggregates.txt')
+    def testPythonAggregator(self):
+        self._engine_test(ruledef='python_aggregations', input='pairs.txt', expected_output='aggregates.txt')
+        
+    def testBuiltinAggregator(self):
+        self._engine_test(ruledef='builtin_aggregations', input='pairs.txt', expected_output='aggregates_with_count.txt')
         
     def testUpdateDelete(self):
         self._engine_test(ruledef='update_delete', input='pairs.txt', expected_output='aggregates.txt')
@@ -63,7 +70,7 @@ class RuleEngineTests(TestCase):
         engine2.load(resource_filename(expected_outputs.__name__, expected_output))
         expected_facts = self._get_facts(engine2)
         
-        self.assertEqual(actual_facts, expected_facts)
+        self.assertEqual(expected_facts, actual_facts)
         
     def _make_engine(self, ruledef):
         engine = RuleEngine()
@@ -75,6 +82,7 @@ class RuleEngineTests(TestCase):
         for fact in engine.get_facts():
             values = fact._as_dict()
             values.pop('_id', None)
+            values.pop(UNIQUE_INDEX_FIELD, None)
             for key, value in values.iteritems():
                 if isinstance(value, HasSlots):
                     values[key] = value._as_dict()
