@@ -3,6 +3,7 @@ from aggregations import Aggregator
 from builtin_aggregations import AssertAggregate, Sum, Max, Min, Count
 from class_ import Class, InstanceField
 from clips_func import *
+from conditional_expr import if_then_else
 from expr import (IntegerField, NumberField, StringField, UnicodeField,
                   BooleanField, DateTimeField, TRUE, FALSE, UNKNOWN_BOOL)
 from fact import Fact

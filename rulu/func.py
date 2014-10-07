@@ -6,7 +6,7 @@ so that they can be called inside rules (in conditions, assertions etc.)
 import clips
 import functools
 import sys
-from expr import PythonFuncExpr
+from clips_func import PythonFuncExpr
 from typedefs import Boolean, String, Integer, Number
 from utils import UniqueIdCounter
 
