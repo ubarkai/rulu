@@ -1,4 +1,4 @@
-from utils import Printable, RuleEngineError, LispExpr
+from utils import Printable, RuleEngineError
 from typedefs import Boolean, DateTime, Integer, Number, String, Unicode
 
 class BaseExpr(Printable):

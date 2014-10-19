@@ -1,6 +1,6 @@
 from actions import BaseAction, Assert, Update, Delete
 from aggregations import Aggregator
-from builtin_aggregations import AssertAggregate, Sum, Max, Min, Count
+from builtin_aggregations import *
 from class_ import Class, InstanceField
 from clips_func import *
 from conditional_expr import if_then_else

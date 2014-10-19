@@ -1,3 +1,7 @@
+"""
+Basic wrapper for CLIPS Object-Oriented (COOL) constructs 
+"""
+
 import clips
 from expr import FieldExpr, BaseExpr
 from slots import HasSlots

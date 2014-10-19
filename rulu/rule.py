@@ -155,9 +155,6 @@ class Rule(object):
         self.set_premise(container).set_negative()
         
     def set_groupby(self, **kwargs):
-        for value in kwargs.itervalues():
-            if not isinstance(value, FieldExpr):
-                raise RuleEngineError('Groupby is only supported for fact fields')
         self.groupby.update(kwargs)
         
     def add_secondary_rule(self, rule):
@@ -190,7 +187,7 @@ class Rule(object):
     def _init_target(self, engine):
         target_name = self.get_target_name()
         if target_name is None:
-            raise RuleEngineError('Cannot build rule, target name not set')
+            raise RuleEngineError('Cannot build rule, target name not set or multiple targets have the same name')
         if self.name is None:
             self.name = target_name
         if self.target._name is None:

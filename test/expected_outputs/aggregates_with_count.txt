@@ -1,3 +1,6 @@
+(ArgMinMax (first 1) (argmin 3) (argmin_2 7) (argmax 3) (argmax_2 13))
+(ArgMinMax (first 2) (argmin 7) (argmin_2 3) (argmax 7) (argmax_2 17))
+(ArgMinMax (first 3) (argmin 0) (argmin_2 10) (argmax 0) (argmax_2 10))
 (CountAll (value 6))
 (SumByFirst (first 1) (value 6))
 (SumByFirst (first 2) (value 12))
