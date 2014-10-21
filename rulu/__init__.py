@@ -13,6 +13,6 @@ from operators import or_, not_
 from ruledef import (RuleDef, match, action, condition, not_exists, fields,
                      salience, name, description, target, foreach, groupby)
 from typedefs import (RuleEngineType, Boolean, DateTime, Integer, Number, 
-                      String, Unicode) 
+                      String, Unicode, Multifield) 
 
 __all__ = sorted(x for x in locals() if not x.startswith('_'))

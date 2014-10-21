@@ -1,5 +1,5 @@
 from expr import BaseExpr, normalize_expr, SymbolExpr
-from typedefs import Integer, Number, String, Symbol, FactIndexType, Boolean
+from typedefs import Integer, Number, String, Symbol, FactIndexType, Boolean, Multifield
 from utils import LispExpr
 
 class ClipsFuncExpr(BaseExpr):
@@ -21,11 +21,24 @@ class ClipsFuncExpr(BaseExpr):
     
     def replace_fields(self, field_map):
         args = [arg.replace_fields(field_map) for arg in self.args]
+        return self._duplicate_with_args(*args)
+    
+    def _duplicate_with_args(self, *args):
         return ClipsFuncExpr(self.func_name, self.return_type, *args)
     
     def __str__(self):
         return '{}({})'.format(self.func_name, ','.join(map(str, self.args)))
-
+    
+class ConcatenateExpr(ClipsFuncExpr):
+    def __init__(self, *args):
+        return super(ConcatenateExpr, self).__init__('', Multifield, *args)
+    
+    def _duplicate_with_args(self, *args):
+        return ConcatenateExpr(*args)
+        
+    def to_lisp(self):
+        return ' '.join(str(arg.to_lisp()) for arg in self.args)
+     
 class PythonFuncExpr(ClipsFuncExpr):
     def __init__(self, python_func_name, return_type, *args):
         args = (SymbolExpr(python_func_name), ) + args
@@ -35,7 +48,7 @@ class PythonFuncExpr(ClipsFuncExpr):
         if self.return_type is Boolean:
             return (self != 0).to_lisp()
         else:
-            return super(PythonFuncExpr, self).to_lisp(self)
+            return super(PythonFuncExpr, self).to_lisp()
         
 def clips_func(funcname, return_type):
     def func(*args):
@@ -48,3 +61,8 @@ min_ = clips_func('min', Number)
 max_ = clips_func('max', Number)
 fact_index = clips_func('fact-index', FactIndexType)
 gensym = clips_func('gensym', Symbol)
+create_multifield = clips_func('create$', Multifield)
+insert_multifield = clips_func('insert$', Multifield)
+length_multifield = clips_func('length$', Integer)
+
+def concatenate(*args): return ConcatenateExpr(*args)

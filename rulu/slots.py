@@ -1,5 +1,6 @@
 from expr import FieldExpr
 from utils import logger, wrap_clips_errors, RuleEngineError
+from typedefs import Multifield
 
 ANONYMOUS = 'Anonymous'
 
@@ -23,12 +24,19 @@ class HasSlots(object):
     def _instrument(cls):
         for key, value in cls._fields.iteritems():
             value._init(container=cls, field_name=key)
-        cls._slots = ' '.join('(slot {} (type {}))'.format(key, value._type.CLIPS_TYPE) 
+        cls._slots = ' '.join(cls._make_slot(key, value._type)
                               for key, value in cls._fields.iteritems())
         cls._clips_type = None # To be filled in _build()
         cls._all_subclasses.append(cls)
         cls._ordered_fields = sorted(cls._fields, key=lambda field : cls._fields[field].order)
         cls._field_order = {name: n for n, name in enumerate(cls._ordered_fields)}
+        
+    @classmethod
+    def _make_slot(cls, name, type):
+        if issubclass(type, Multifield):
+            return '(multislot {})'.format(name)
+        else:
+            return '(slot {} (type {}))'.format(name, type.CLIPS_TYPE)
 
     @classmethod
     def _build(cls, engine):

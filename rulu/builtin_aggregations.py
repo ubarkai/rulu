@@ -1,5 +1,5 @@
 from actions import Assert, Delete, Update
-from clips_func import fact_index, gensym, min_, max_
+from clips_func import fact_index, gensym, min_, max_, create_multifield, concatenate
 from conditional_expr import if_then_else
 from expr import normalize_expr, BaseExpr
 from rule import Rule
@@ -85,6 +85,13 @@ class Max(MapReduceFunc):
 class Min(MapReduceFunc):
     def _reduce(self, x, y): return min_(x, y)
     
+class Concatenate(MapReduceFunc):
+    def _map(self, x):
+        return create_multifield(x)
+     
+    def _reduce(self, x, y):
+        return concatenate(x, y)
+
 class BaseArgMinMax(MapReduceFunc):
     def __init__(self, x, key):
         return super(BaseArgMinMax, self).__init__(x, key)
@@ -101,5 +108,5 @@ class ArgMax(BaseArgMinMax):
     
 class Count(Sum):
     def _map(self): return 1
-
-__all__ = 'AssertAggregate Sum Max Min ArgMax ArgMin Count'.split()
+    
+__all__ = 'AssertAggregate Sum Max Min ArgMax ArgMin Count Concatenate'.split()

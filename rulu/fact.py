@@ -2,6 +2,7 @@ import clips
 from actions import Update
 from slots import HasSlots, SlotsMeta
 from expr import BaseExpr, ConvertibleToExpr
+from typedefs import FactIndexType
 from utils import Printable, wrap_clips_errors
 
 RULU_INTERNAL_PREFIX = '_rulu_internal'
@@ -99,3 +100,6 @@ class FactExpr(BaseExpr):
         
     def __str__(self):
         return str(self.fact)
+    
+    def get_type(self):
+        return FactIndexType

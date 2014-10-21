@@ -7,7 +7,7 @@ from fact import Fact, FactExpr, RULU_INTERNAL_PREFIX
 from func import RuleFunc
 from operators import Condition
 from slots import make_slotted_type
-from typedefs import TYPE_MAP, FactIndexType, Integer
+from typedefs import TYPE_MAP, FactIndexType, Integer, Multifield
 from utils import LispExpr, RuleEngineError, UniqueIdCounter, logger, wrap_clips_errors
 
 class RulePremise(object):
@@ -107,6 +107,8 @@ class Rule(object):
         
         if not matching_var_names:
             var_name = self.general_varnames.next()
+            if fields[0].get_type() is Multifield:
+                var_name = '$' + var_name
         else:
             var_names = sorted(matching_var_names)
             var_name = var_names[0]

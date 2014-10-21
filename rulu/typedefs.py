@@ -4,6 +4,7 @@ conversions from and to Python types.
 """
 
 from calendar import timegm
+from collections import Iterable
 from datetime import datetime
 import clips
 
@@ -104,6 +105,18 @@ class DateTime(RuleEngineType):
     def _from_clips_value(cls, x):
         return datetime.utcfromtimestamp(x)
     
+class Multifield(RuleEngineType):
+    """
+    Multifield type. Maps to Python list.
+    """
+    PYTHON_TYPE = list
+    PYTHON_TYPE_CHECK = Iterable
+    CLIPS_TYPE = 'MULTIFIELD'
+     
+    @classmethod
+    def _to_clips_value(cls, x):
+        return clips.Multifield(x)
+     
 class FactIndexType(RuleEngineType): pass
 
 TYPE_MAP = {t.PYTHON_TYPE: t for t in (Integer, Number, String, Boolean, DateTime)}

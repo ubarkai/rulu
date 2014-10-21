@@ -41,6 +41,9 @@ class RuleEngineTests(TestCase):
     def testBuiltinAggregator(self):
         self._engine_test(ruledef='builtin_aggregations', input='pairs.txt', expected_output='aggregates_with_count.txt')
         
+    def testMultifield(self):
+        self._engine_test(ruledef='multifield', input='pairs.txt', expected_output='concatenated.txt')
+        
     def testUpdateDelete(self):
         self._engine_test(ruledef='update_delete', input='pairs.txt', expected_output='aggregates.txt')
         

@@ -1,0 +1,6 @@
+(Grouped (first 1) (values 1 2 3))
+(Grouped (first 2) (values 5 7))
+(Grouped (first 3) (values 0))
+(Sum (first 1) (value 6))
+(Sum (first 2) (value 12))
+(Sum (first 3) (value 0))
