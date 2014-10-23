@@ -8,7 +8,7 @@ import functools
 import sys
 from clips_func import PythonFuncExpr
 from typedefs import Boolean, String, Integer, Number
-from utils import UniqueIdCounter
+from utils import UniqueIdCounter, logger
 
 class RuleFunc(object):
     """
@@ -18,12 +18,14 @@ class RuleFunc(object):
     _counters = {}
     _engine_by_environment = {}
     _cur_engine = None
+    NUM_CALLS_PER_PRINT = 1000
     
     def __init__(self, func, return_type=String, func_name=None):
         self.func = func
         self.type = return_type
         self.func_name = func_name or func.__name__
         self._wrapper_by_engine = {}
+        self._num_calls = 0
         
     def __call__(self, *args, **kwargs):
         """
@@ -49,6 +51,9 @@ class RuleFunc(object):
                 args = [(engine._wrap_clips_instance(arg) if isinstance(arg, 
                     (clips.Fact, clips.InstanceName)) else arg) for arg in args]
                 res = self.func(*args)
+                self._num_calls += 1
+                if self._num_calls % self.NUM_CALLS_PER_PRINT == 0:
+                    logger.debug('{}: called {} times.'.format(self.func_name, self._num_calls))
                 return self.type._to_clips_value(res)
             except:
                 # Register error to be raised later by engine

@@ -247,4 +247,8 @@ class Rule(object):
         if self.target is not None:
             params['assert_'] = lambda **kwargs : _engine.assert_(self.target, **kwargs)
         for func in self.python_actions:
-            func(**params)
+            try:
+                func(**params)
+            except:
+                logger.error('Exception while running {} in rule {}.'.format(func, self.name))
+                raise
