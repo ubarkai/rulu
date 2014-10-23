@@ -6,7 +6,8 @@ class Pair(Fact):
 
 
 SumByFirst = RuleDef(
-    action(Assert(first=Pair.first, value=Pair.second))
+    # Added extra _id field to ensure fact uniqueness
+    action(Assert(first=Pair.first, value=Pair.second, _id=Pair.second))
 )
 
 RuleDef(

@@ -3,9 +3,10 @@ from importlib import import_module
 from threading import Lock
 from types import ModuleType
 
-from ruledef import RuleDef, params
+from auto_salience import auto_set_salience
 from func import RuleFunc
 from slots import HasSlots
+from ruledef import RuleDef, params
 from utils import logger
 
 class DefModuleLoader(object):
@@ -14,7 +15,7 @@ class DefModuleLoader(object):
         self.lock = Lock()
         self.logger = logger.getChild(type(self).__name__)
         
-    def load(self, module_name, package=None, **module_params):
+    def load(self, module_name, package=None, auto_salience=True, **module_params):
         # Prepare for import
         if isinstance(package, ModuleType):
             package = package.__name__
@@ -40,6 +41,9 @@ class DefModuleLoader(object):
             entity = getattr(module, name)
             if isinstance(entity, RuleDef):
                 entity._set_name(name) # TODO: include module name
+                
+        if auto_salience:
+            auto_set_salience(RuleDef._all_instances)
                 
         # Compile everything, except unnamed templates (which cannot be compiled)
         # Note that RuleDefs also may contain TemplateDefs, which would not be named.

@@ -199,6 +199,7 @@ class Rule(object):
         
     def _init_aggregators(self, engine):
         # TODO: Move this to separate module with secondary rule
+        self.finalize_rules = []
         for aggregator_cls in self.aggregator_classes:
             aggregator = aggregator_cls(engine=engine, template=self.target)
             engine.preprocess_funcs.append(aggregator.init)
@@ -218,6 +219,7 @@ class Rule(object):
             self.set_salience((self.salience)+1)
             finalize_rule.add_python_action(lambda assert_, **kwargs: aggregator.finalize(assert_))
             finalize_rule.build(engine)
+            self.finalize_rules.append(finalize_rule)
             
     def _add_python_action(self, engine, target_name):
         func = RuleFunc(partial(self._action, engine), Integer, 'target_{}'.format(target_name))

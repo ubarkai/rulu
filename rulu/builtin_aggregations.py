@@ -44,8 +44,6 @@ class AssertAggregate(Assert):
         super(AssertAggregate, self).__init__(**kwargs)
         
     def prepare_rule(self, rule):
-        if rule.salience is None:
-            rule.salience = -1000
         self.data.update({key : normalize_expr(value) for key, value in rule.groupby.iteritems()})
         self.data[UNIQUE_INDEX_FIELD] = gensym()  
         super(AssertAggregate, self).prepare_rule(rule)
