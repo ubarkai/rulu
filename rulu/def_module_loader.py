@@ -1,4 +1,5 @@
 import sys
+from collections import defaultdict
 from importlib import import_module
 from threading import Lock
 from types import ModuleType
@@ -7,6 +8,7 @@ from auto_salience import auto_set_salience
 from func import RuleFunc
 from slots import HasSlots
 from ruledef import RuleDef, params
+from rule import Rule
 from utils import logger
 
 class DefModuleLoader(object):
@@ -15,7 +17,7 @@ class DefModuleLoader(object):
         self.lock = Lock()
         self.logger = logger.getChild(type(self).__name__)
         
-    def load(self, module_name, package=None, auto_salience=True, **module_params):
+    def load(self, module_name, package=None, auto_salience=True, debug_rules=False, **module_params):
         # Prepare for import
         if isinstance(package, ModuleType):
             package = package.__name__
@@ -45,6 +47,8 @@ class DefModuleLoader(object):
                 
         if auto_salience:
             auto_set_salience(RuleDef._all_instances)
+        if debug_rules:
+            self._build_debug_rules()
 
         # Sort for clarity
         templates_to_build.sort(key=lambda x:x._name)
@@ -54,3 +58,19 @@ class DefModuleLoader(object):
         # Note that RuleDefs also may contain TemplateDefs, which would not be named.
         for entity in templates_to_build + rules_to_build:
             entity._build(self.engine)
+
+    def _build_debug_rules(self):
+        by_salience = defaultdict(list)
+        for ruledef in RuleDef._all_instances:
+            by_salience[ruledef._rule.salience or 0].append(ruledef._rule)
+        for salience, rules in sorted(by_salience.iteritems()):
+            self._add_debug_rule(salience, rules)
+            
+    def _add_debug_rule(self, salience, preceding_rules):
+        rule_names = ', '.join(rule.name or '->{}'.format(rule.target._name) for rule in preceding_rules)
+        def debug_func(*args, **kwargs):
+            self.logger.debug('Ran rule(s): {} at salience: {}.'.format(rule_names, salience))
+        rule = Rule()
+        rule.set_salience(salience-1)
+        rule.add_python_action(debug_func)
+        rule.build(self.engine)

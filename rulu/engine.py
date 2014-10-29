@@ -15,11 +15,11 @@ class RuleEngine(object):
         RuleFunc._register_engine(self)
         self.environment.DebugConfig.ActivationsWatched = trace
         
-    def load_module(self, module_name, package=None):
+    def load_module(self, module_name, package=None, debug_rules=False):
         """ 
         Load data model and rule definitions from the given Python module 
         """
-        DefModuleLoader(self).load(module_name, package)
+        DefModuleLoader(self).load(module_name, package, debug_rules=False)
 
     def assert_(self, fact_type, **values):
         """ 
@@ -55,7 +55,7 @@ class RuleEngine(object):
             
     def get_facts(self):
         """
-        Return an interator over all known facts
+        Return an iterator over all known facts
         """
         return (self._wrap_clips_instance(fact) for fact in self.environment.FactList()
                 if fact.Relation != 'initial-fact' 
@@ -93,9 +93,10 @@ class RuleEngine(object):
         self.logger.debug('Saving facts to {}'.format(filename))
         self.environment.SaveFacts(filename)
         
-        instance_filename = _get_instance_filename(filename)
-        self.logger.debug('Saving instances to {}'.format(instance_filename))
-        self.environment.SaveInstances(instance_filename)
+        if len(self.environment.DefinstancesList()) > 1: # There is 1 by default
+            instance_filename = _get_instance_filename(filename)
+            self.logger.debug('Saving instances to {}'.format(instance_filename))
+            self.environment.SaveInstances(instance_filename)
         
     def register_clips_type(self, clips_type):
         self.clips_types[clips_type._name] = clips_type

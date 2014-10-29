@@ -1,5 +1,6 @@
 from collections import defaultdict
 from fact import IndexedFactReference
+from ruledef import RuleDef
 from utils import RuleEngineError
 
 def auto_set_salience(ruledefs):
@@ -20,6 +21,8 @@ def _get_dependencies(ruledefs):
         for premise in rule.premises:
             if isinstance(premise, IndexedFactReference):
                 premise = premise._template_cls
+            if isinstance(premise, RuleDef):
+                premise = premise._rule.target
             for other_rule in by_target[premise]:
                 if other_rule is not rule:
                     dependencies[other_rule].add(rule)
