@@ -16,12 +16,15 @@ def _get_dependencies(ruledefs):
 
     dependencies = defaultdict(set)
     for ruledef in ruledefs:
-        for premise in ruledef._rule.premises:
+        rule = ruledef._rule
+        for premise in rule.premises:
             if isinstance(premise, IndexedFactReference):
                 premise = premise._template_cls
             for other_rule in by_target[premise]:
-                if other_rule is not ruledef._rule:
-                    dependencies[other_rule].add(ruledef._rule)
+                if other_rule is not rule:
+                    dependencies[other_rule].add(rule)
+        dependencies[rule].update(rule.secondary_rules)
+
     return dependencies
 
 # Adapted from networkx (https://networkx.github.io)

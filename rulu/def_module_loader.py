@@ -34,7 +34,8 @@ class DefModuleLoader(object):
             if module.__name__ in existing_modules:
                 reload(module)
             # TODO: Why are there non-named templates??
-            to_build = [x for x in HasSlots._all_subclasses if x._name is not None] + RuleDef._all_instances 
+            templates_to_build = [x for x in HasSlots._all_subclasses if x._name is not None]
+            rules_to_build = RuleDef._all_instances
 
         # Add name to all unnamed instances (according to variable name)
         for name in dir(module):
@@ -44,8 +45,12 @@ class DefModuleLoader(object):
                 
         if auto_salience:
             auto_set_salience(RuleDef._all_instances)
+
+        # Sort for clarity
+        templates_to_build.sort(key=lambda x:x._name)
+        rules_to_build.sort(key=lambda x:(-(x._rule.salience or 0), x._rule.name))
                 
         # Compile everything, except unnamed templates (which cannot be compiled)
         # Note that RuleDefs also may contain TemplateDefs, which would not be named.
-        for entity in to_build:
+        for entity in templates_to_build + rules_to_build:
             entity._build(self.engine)
