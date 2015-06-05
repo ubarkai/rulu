@@ -1,7 +1,7 @@
 import clips
 import os
 from def_module_loader import DefModuleLoader
-from fact import RULU_INTERNAL_PREFIX
+from fact import Fact, RULU_INTERNAL_PREFIX
 from func import RuleFunc
 from utils import RuleEngineError, logger
 
@@ -15,16 +15,21 @@ class RuleEngine(object):
         RuleFunc._register_engine(self)
         self.environment.DebugConfig.ActivationsWatched = trace
         
-    def load_module(self, module_name, package=None, debug_rules=False):
+    def load_module(self, module_name, package=None, auto_salience=False, debug_rules=False):
         """ 
         Load data model and rule definitions from the given Python module 
         """
-        DefModuleLoader(self).load(module_name, package, debug_rules=False)
+        DefModuleLoader(self).load(module_name, package, auto_salience=auto_salience,
+                                   debug_rules=debug_rules)
 
     def assert_(self, fact_type, **values):
         """ 
         Assert a new fact 
         """
+        if isinstance(fact_type, basestring):
+            fact_type = self.clips_types.get(fact_type)
+        if not issubclass(fact_type, Fact):
+            raise TypeError('{} is not a fact type.'.format(fact_type))
         fact = fact_type(**values)
         self.environment.Assert(fact._clips_obj)
         
@@ -53,13 +58,20 @@ class RuleEngine(object):
             self.logger.info('Calling: %s', postprocess_func)
             postprocess_func()
             
-    def get_facts(self):
+    def get_all_facts(self):
         """
         Return an iterator over all known facts
         """
         return (self._wrap_clips_instance(fact) for fact in self.environment.FactList()
-                if fact.Relation != 'initial-fact' 
+                if fact.Relation != 'initial-fact'
                 and not fact.Relation.startswith(RULU_INTERNAL_PREFIX))
+            
+    def get_facts(self, type_name):
+        """
+        Return an iterator over all known facts of given type
+        """
+        return (self._wrap_clips_instance(fact) for fact in self.environment.FactList()
+                if fact.Relation == type_name)
     
     def clear(self):
         self.environment.Clear()

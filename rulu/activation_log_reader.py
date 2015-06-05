@@ -79,7 +79,7 @@ class ActivationLogReader(object):
         """ Read and index all facts. """
         self.fact_by_index = {}
         self.fact_by_content = defaultdict(dict)
-        for fact in self.engine.get_facts():
+        for fact in self.engine.get_all_facts():
             self.fact_by_index[fact._clips_obj.Index] = fact
             self.fact_by_content[fact._name][fact._data] = fact
     

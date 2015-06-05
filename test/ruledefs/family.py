@@ -1,6 +1,6 @@
 from rulu import *
 
-# Data model definition for "X is father of Y"
+# Data model definition for "X is the father of Y"
 class IsFatherOf(Fact):
     father = StringField()
     son = StringField()

@@ -76,4 +76,5 @@ class UnaryOperator(BaseExpr):
         return '({} {})'.format(self.op, self.expr)
 
 or_ = lambda lhs, rhs: BooleanBinaryOperator(normalize_expr(lhs), normalize_expr(rhs), op='or')
+and_ = lambda lhs, rhs: BooleanBinaryOperator(normalize_expr(lhs), normalize_expr(rhs), op='and')
 not_ = lambda expr: UnaryOperator(normalize_expr(expr), op='not')

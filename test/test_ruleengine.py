@@ -82,7 +82,7 @@ class RuleEngineTests(TestCase):
     
     def _get_facts(self, engine):
         res = []
-        for fact in engine.get_facts():
+        for fact in engine.get_all_facts():
             values = fact._as_dict()
             values.pop('_id', None)
             values.pop(UNIQUE_INDEX_FIELD, None)

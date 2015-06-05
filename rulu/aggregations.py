@@ -1,3 +1,9 @@
+"""
+This module implements aggregators, in which facts are collected during 
+the rule engine execution and then aggregated in Python code afterwards. 
+"""
+
+
 from bunch import Bunch
 from collections import defaultdict
 
@@ -12,15 +18,23 @@ class Aggregator(object):
         self.finalized = False
         
     def init(self):
+        """ Runs before rule engine execution """
         pass
     
     def finalize(self, assert_):
+        """ Runs after rule engine execution """
         self.finalized = True
     
     def process_one(self, **kwargs):
+        """ Runs on each fact to be aggregated """
         raise NotImplementedError
 
 def grouping_aggregator(keys, func):
+    """ 
+    'Groupby' aggregator. Facts are collected to lists grouped by
+    (zero or more) keys and then each group is processed separately
+    by the given 'func'
+    """ 
     keys = tuple(_make_key(key) for key in keys)
     class GroupAggregator(Aggregator):
         def init(self): 

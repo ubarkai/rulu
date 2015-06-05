@@ -3,23 +3,13 @@ from setuptools import setup
 from setuptools.command.test import test as TestCommand
 from os import path
 
-try:
-    import clips
-except ImportError:
-    sys.stderr.write("""
-    PyCLIPS not found.
-    Please:
-        1. Download it from http://sourceforge.net/projects/pyclips/files/pyclips/pyclips-1.0/
-        2. Unpack and run python setup.py install
-    
-    """)
-    sys.exit(1)
 
 here = path.abspath(path.dirname(__file__))
 
 with open(path.join(here, 'VERSION')) as version_file:
     version = version_file.read().strip()
     
+
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
@@ -31,6 +21,7 @@ class PyTest(TestCommand):
         errcode = pytest.main(self.test_args)
         sys.exit(errcode)
     
+
 setup(
     name='rulu',
     version=version,

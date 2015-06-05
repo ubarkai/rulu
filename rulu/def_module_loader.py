@@ -17,7 +17,7 @@ class DefModuleLoader(object):
         self.lock = Lock()
         self.logger = logger.getChild(type(self).__name__)
         
-    def load(self, module_name, package=None, auto_salience=True, debug_rules=False, **module_params):
+    def load(self, module_name, package=None, auto_salience=False, debug_rules=False, **module_params):
         # Prepare for import
         if isinstance(package, ModuleType):
             package = package.__name__
