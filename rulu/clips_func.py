@@ -1,3 +1,4 @@
+import clips
 from expr import BaseExpr, normalize_expr, SymbolExpr
 from typedefs import Integer, Number, String, Symbol, FactIndexType, Boolean, Multifield
 from utils import LispExpr
@@ -22,6 +23,9 @@ class ClipsFuncExpr(BaseExpr):
     def replace_fields(self, field_map):
         args = [arg.replace_fields(field_map) for arg in self.args]
         return self._duplicate_with_args(*args)
+
+    def evaluate(self):
+        return clips.Eval(str(self.to_lisp())).encode()
     
     def _duplicate_with_args(self, *args):
         return ClipsFuncExpr(self.func_name, self.return_type, *args)

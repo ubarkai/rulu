@@ -7,6 +7,9 @@ ANONYMOUS = 'Anonymous'
 class SlotsMeta(type):
     def __new__(meta, name, bases, attrs): #@NoSelf
         attrs['_fields'] = {k: v for k, v in attrs.iteritems() if isinstance(v, FieldExpr)}
+        for base in bases:
+            if type(base) is meta:
+                attrs['_fields'].update(base._fields)
         attrs['_name'] = None if name == ANONYMOUS else name
         attrs['__slots__'] = ('_clips_obj', '_data')
         cls = super(SlotsMeta, meta).__new__(meta, name, bases, attrs)

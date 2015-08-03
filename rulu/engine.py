@@ -1,9 +1,12 @@
 import clips
 import os
+
+from activation_log_reader import ActivationLogReader
 from def_module_loader import DefModuleLoader
 from fact import Fact, RULU_INTERNAL_PREFIX
 from func import RuleFunc
 from utils import RuleEngineError, logger
+
 
 class RuleEngine(object):
     def __init__(self, trace=False):
@@ -12,9 +15,9 @@ class RuleEngine(object):
         self.clips_types = {}
         self.preprocess_funcs = []
         self.postprocess_funcs = []
+        self.activation_log_reader = ActivationLogReader(self) if trace else None
         RuleFunc._register_engine(self)
-        self.environment.DebugConfig.ActivationsWatched = trace
-        
+
     def load_module(self, module_name, package=None, auto_salience=False, debug_rules=False):
         """ 
         Load data model and rule definitions from the given Python module 
@@ -32,6 +35,9 @@ class RuleEngine(object):
             raise TypeError('{} is not a fact type.'.format(fact_type))
         fact = fact_type(**values)
         self.environment.Assert(fact._clips_obj)
+        if self.activation_log_reader:
+            self.activation_log_reader._add_python_assert(fact)
+        return fact
         
     def run(self):
         self.run_one_cycle()
@@ -129,6 +135,7 @@ class RuleEngine(object):
             return self.clips_types[str(instance.Class)](_clips_obj=instance)
         else:
             return self.clips_types[str(instance.Relation)](_clips_obj=instance)
+
 
 def _get_instance_filename(fact_filename):
     tokens = fact_filename.rsplit('.', 1)

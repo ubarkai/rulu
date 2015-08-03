@@ -223,7 +223,7 @@ class Rule(object):
             
     def _add_python_action(self, engine, target_name):
         func = RuleFunc(partial(self._action, engine), Integer, 'target_{}'.format(target_name))
-        params = [premise.container for premise in self.premises.itervalues()]
+        params = [premise.container for premise in self.premises.itervalues() if not premise.negative]
         self.actions.append(func(*params).replace_fields(self.variable_map))
         
     def _build_lhs(self):
@@ -242,10 +242,18 @@ class Rule(object):
     
     def _action(self, _engine, *facts):
         params = {}
-        for var, fact in zip(self.premises, facts):
+        vars = [var for var, premise in self.premises.iteritems() if not premise.negative]
+        for var, fact in zip(vars, facts):
             var._update_python_param(params, fact)
         if self.target is not None:
             params['assert_'] = lambda **kwargs : _engine.assert_(self.target, **kwargs)
+        if _engine.activation_log_reader is None:
+            self._run_python_actions(**params)
+        else:
+            with _engine.activation_log_reader._trace_asserts(self, facts):
+                self._run_python_actions(**params)
+
+    def _run_python_actions(self, **params):
         for func in self.python_actions:
             try:
                 func(**params)

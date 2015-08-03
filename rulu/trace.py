@@ -2,7 +2,9 @@ from bisect import bisect
 from collections import defaultdict
 from itertools import product
 
+
 class FactNotFoundError(Exception): pass
+
 
 class Trace(object):
     def __init__(self, fact, rule=None, src_traces=[]):
@@ -36,6 +38,7 @@ class Trace(object):
         indent += '  '
         return '<{}>'.format('\n'.join([header] + [t._recursive_str(indent) for t in self.src_traces]))
 
+
 class BackwardTraceFinder(object):
     MAX_BRANCHES = 1000
     
@@ -44,7 +47,7 @@ class BackwardTraceFinder(object):
         self._fact_map = defaultdict(list)
         for rule, src_facts in activation_log.get_activations():
             for target_fact in activation_log.resolve_asserted_facts(rule, src_facts):
-                self._fact_map[target_fact._clips_index()].append((rule, src_facts))    
+                self._fact_map[target_fact._clips_index()].append((rule, src_facts))
         self._cache = {}
         self._known_fact_indices = set()
         
@@ -58,9 +61,8 @@ class BackwardTraceFinder(object):
     def trace(self, fact_type, fact_args, num=1):
         if isinstance(fact_type, basestring):
             fact_type = self._activation_log.engine.clips_types[fact_type]
-        try:
-            fact = self._activation_log.find_fact(fact_type, **fact_args)
-        except KeyError:
+        fact = self._activation_log.find_fact(fact_type, **fact_args)
+        if fact is None:
             raise FactNotFoundError((fact_type, fact_args))
         return self._cached_trace(fact, num)
     
