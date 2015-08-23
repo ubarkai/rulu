@@ -9,7 +9,7 @@ from expr import (IntegerField, NumberField, StringField, UnicodeField, SymbolFi
 from fact import Fact
 from func import (RuleFunc, TypedRuleFunc, BooleanRuleFunc, IntegerRuleFunc,
                   NumberRuleFunc, StringRuleFunc)
-from operators import or_, not_
+from operators import and_, or_, not_
 from ruledef import (RuleDef, match, action, condition, not_exists, fields,
                      salience, name, description, target, foreach, groupby)
 from typedefs import (RuleEngineType, Boolean, DateTime, Integer, Number, 

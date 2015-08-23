@@ -3,19 +3,16 @@ from typedefs import Boolean, Integer, Number
 from utils import LispExpr, RuleEngineError
 
 class BaseBinaryOperator(BaseExpr):
-    def __init__(self, lhs, rhs, op):
-        super(BaseBinaryOperator, self).__init__(all_fields=lhs.all_fields.union(rhs.all_fields))
-        self.lhs = lhs
-        self.rhs = rhs
+    def __init__(self, op, *args):
+        super(BaseBinaryOperator, self).__init__(all_fields=set().union(*(arg.all_fields for arg in args)))
         self.op = op
+        self.args = args
         
     def to_lisp(self):
-        return LispExpr(self.op, self.lhs.to_lisp(), self.rhs.to_lisp())
+        return LispExpr(self.op, *(arg.to_lisp() for arg in self.args))
     
     def replace_fields(self, field_map):
-        return type(self)(lhs=self.lhs.replace_fields(field_map), 
-                          rhs=self.rhs.replace_fields(field_map),
-                          op=self.op)
+        return type(self)(self.op, *(arg.replace_fields(field_map) for arg in self.args))
         
     def __str__(self):
         return '({} {} {})'.format(self.lhs, self.op, self.rhs)
@@ -75,6 +72,6 @@ class UnaryOperator(BaseExpr):
     def __str__(self):
         return '({} {})'.format(self.op, self.expr)
 
-or_ = lambda lhs, rhs: BooleanBinaryOperator(normalize_expr(lhs), normalize_expr(rhs), op='or')
-and_ = lambda lhs, rhs: BooleanBinaryOperator(normalize_expr(lhs), normalize_expr(rhs), op='and')
+or_ = lambda *args: BooleanBinaryOperator('or', *(normalize_expr(arg) for arg in args))
+and_ = lambda *args: BooleanBinaryOperator('and', *(normalize_expr(arg) for arg in args))
 not_ = lambda expr: UnaryOperator(normalize_expr(expr), op='not')

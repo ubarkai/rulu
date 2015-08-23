@@ -22,6 +22,7 @@ class ActivationLogReader(object):
     def __init__(self, engine):
         self.engine = engine
         self.environment = engine.environment
+        self.clear()
 
     def clear(self):
         clips.TraceStream.Read()

@@ -103,3 +103,6 @@ class FactExpr(BaseExpr):
     
     def get_type(self):
         return FactIndexType
+
+    def to_lisp(self):
+        return str(self)

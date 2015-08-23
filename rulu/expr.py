@@ -23,11 +23,11 @@ class BaseExpr(Printable):
     
     def _binary_operator(self, rhs, op):
         from operators import ArithmeticBinaryOperator
-        return ArithmeticBinaryOperator(self, normalize_expr(rhs), op)
+        return ArithmeticBinaryOperator(op, self, normalize_expr(rhs))
     
     def _boolean_operator(self, rhs, op):
         from operators import BooleanBinaryOperator
-        return BooleanBinaryOperator(self, normalize_expr(rhs), op)
+        return BooleanBinaryOperator(op, self, normalize_expr(rhs))
     
     def replace_fields(self, field_map):
         return field_map.get(self, self)
