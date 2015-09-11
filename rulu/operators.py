@@ -19,7 +19,7 @@ class BaseBinaryOperator(BaseExpr):
     
 class ArithmeticBinaryOperator(BaseBinaryOperator, BaseExpr):
     def get_type(self):
-        lhs_type, rhs_type = self.lhs.get_type(), self.rhs.get_type()
+        lhs_type, rhs_type = [arg.get_type() for arg in self.args]
         if lhs_type in (Integer, Number) and rhs_type in (Integer, Number):
             return Integer if lhs_type is Integer and rhs_type is Integer else Number
         else:
