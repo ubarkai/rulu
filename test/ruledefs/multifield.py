@@ -14,5 +14,6 @@ def python_sum(values):
     return sum(values)
 
 Sum = RuleDef(
-    action(Assert(first=Grouped.first, value=python_sum(Grouped.values)))
+    action(Assert(first=Grouped.first, value=python_sum(Grouped.values))),
+    salience(-1)
 )

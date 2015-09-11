@@ -44,7 +44,7 @@ class DefModuleLoader(object):
             entity = getattr(module, name)
             if isinstance(entity, RuleDef):
                 entity._set_name(name) # TODO: include module name
-                
+
         if auto_salience:
             auto_set_salience(RuleDef._all_instances)
         if debug_rules:
@@ -52,7 +52,8 @@ class DefModuleLoader(object):
 
         # Sort for clarity
         templates_to_build.sort(key=lambda x:x._name)
-        rules_to_build.sort(key=lambda x:(-(x._rule.salience or 0), x._rule.name))
+        if auto_salience:
+            rules_to_build.sort(key=lambda x:(-(x._rule.salience or 0), x._rule.name))
                 
         # Compile everything, except unnamed templates (which cannot be compiled)
         # Note that RuleDefs also may contain TemplateDefs, which would not be named.
