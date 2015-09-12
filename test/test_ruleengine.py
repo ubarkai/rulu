@@ -15,12 +15,47 @@ from ruledefs import nearest_distance_rules
 
 logging.basicConfig(level=logging.DEBUG)
 
-class RuleEngineTests(TestCase):
-    maxDiff = None
-    
+
+class BaseRuleEngineTest(TestCase):
     def setUp(self):
         logging.basicConfig(level=logging.DEBUG)
-        
+
+    def _engine_test(self, ruledef, input, expected_output=None, trace=False):  # @ReservedAssignment
+        engine = self._make_engine(ruledef, trace=trace)
+        engine.load(resource_filename(inputs.__name__, input))
+        engine.run_one_cycle()
+        actual_facts = self._get_facts(engine)
+
+        if expected_output is not None:
+            engine2 = self._make_engine(ruledef)
+            engine2.load(resource_filename(inputs.__name__, input))
+            engine2.load(resource_filename(expected_outputs.__name__, expected_output))
+            expected_facts = self._get_facts(engine2)
+            self.assertEqual(expected_facts, actual_facts)
+        return engine
+
+    def _make_engine(self, ruledef, trace=False):
+        engine = RuleEngine(trace=trace)
+        engine.load_module(ruledef, ruledefs)
+        return engine
+
+    def _get_facts(self, engine):
+        res = []
+        for fact in engine.get_all_facts():
+            values = fact._as_dict()
+            values.pop('_id', None)
+            values.pop(UNIQUE_INDEX_FIELD, None)
+            for key, value in values.iteritems():
+                if isinstance(value, HasSlots):
+                    values[key] = value._as_dict()
+            res.append('{} / {}'.format(fact._name, values))
+        return sorted(res)
+
+
+
+class RuleEngineTests(BaseRuleEngineTest):
+    maxDiff = None
+    
     def testFamily(self):
         self._engine_test(ruledef='family', input='fathers.txt', expected_output='grandfathers.txt')
         
@@ -61,33 +96,3 @@ class RuleEngineTests(TestCase):
     def testClassesPythonFree(self):
         nearest_distance_rules.make_rule = nearest_distance_rules.python_free_distance_rule
         self._engine_test(ruledef='nearest', input='points.txt', expected_output='nearest.txt')
-        
-    def _engine_test(self, ruledef, input, expected_output):  # @ReservedAssignment
-        engine = self._make_engine(ruledef)
-        engine.load(resource_filename(inputs.__name__, input))
-        engine.run_one_cycle()
-        actual_facts = self._get_facts(engine)
-
-        engine2 = self._make_engine(ruledef)
-        engine2.load(resource_filename(inputs.__name__, input))
-        engine2.load(resource_filename(expected_outputs.__name__, expected_output))
-        expected_facts = self._get_facts(engine2)
-        
-        self.assertEqual(expected_facts, actual_facts)
-        
-    def _make_engine(self, ruledef):
-        engine = RuleEngine()
-        engine.load_module(ruledef, ruledefs)
-        return engine 
-    
-    def _get_facts(self, engine):
-        res = []
-        for fact in engine.get_all_facts():
-            values = fact._as_dict()
-            values.pop('_id', None)
-            values.pop(UNIQUE_INDEX_FIELD, None)
-            for key, value in values.iteritems():
-                if isinstance(value, HasSlots):
-                    values[key] = value._as_dict()
-            res.append('{} / {}'.format(fact._name, values))
-        return sorted(res)

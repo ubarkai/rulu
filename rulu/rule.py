@@ -41,7 +41,8 @@ class RulePremise(object):
         
     def build_target_field(self):
         return LispExpr(self.target_field_name, self.target_field_var)
-        
+
+
 class Rule(object):
     def __init__(self):
         self.premises = defaultdict(RulePremise)
@@ -174,13 +175,13 @@ class Rule(object):
         if self.python_actions:
             target_name = self.target._name if self.target else None
             self._add_python_action(engine, target_name)
-        lhs = str(self._build_lhs())
-        rhs = str(self._build_rhs())
         if self.name is None:
             self.name = '_anonymous_rule'
         rule_num = sum(1 for rule_name in engine.get_rule_names() if rule_name.startswith(self.name+'@'))
         self.clips_name = '{}@{}'.format(self.name, rule_num+1)
-        logger.getChild('rule').debug('Creating rule: %s\n<%s\n%s\n%s>\n%s', 
+        lhs = str(self._build_lhs())
+        rhs = str(self._build_rhs(engine.activation_log_reader))
+        logger.getChild('rule').debug('Creating rule: %s\n<%s\n%s\n%s>\n%s',
                 self.clips_name, '='*20, lhs, '='*20, rhs)
         self.clips_rule = engine.environment.BuildRule(self.clips_name, lhs, rhs, self.comments)
         for secondary_rule in self.secondary_rules:
@@ -234,8 +235,12 @@ class Rule(object):
         lhs.extend(condition.replace_fields(self.variable_map).to_lisp() for condition in self.conditions) 
         return '\n'.join(str(x) for x in lhs)
     
-    def _build_rhs(self):
-        return '\n'.join(str(action.replace_fields(self.variable_map).to_lisp()) for action in self.actions)
+    def _build_rhs(self, activation_log_reader):
+        from activation_log_reader import _add_trace_to_actions
+        actions_lisp = [action.replace_fields(self.variable_map).to_lisp() for action in self.actions]
+        if activation_log_reader is not None:
+            _add_trace_to_actions(self.clips_name, self.premises, actions_lisp)
+        return '\n'.join(map(str, actions_lisp))
     
     def _make_field_map(self):
         return {}
@@ -247,11 +252,7 @@ class Rule(object):
             var._update_python_param(params, fact)
         if self.target is not None:
             params['assert_'] = lambda **kwargs : _engine.assert_(self.target, **kwargs)
-        if _engine.activation_log_reader is None:
-            self._run_python_actions(**params)
-        else:
-            with _engine.activation_log_reader._trace_asserts(self, facts):
-                self._run_python_actions(**params)
+        self._run_python_actions(**params)
 
     def _run_python_actions(self, **params):
         for func in self.python_actions:

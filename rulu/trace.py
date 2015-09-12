@@ -45,8 +45,8 @@ class BackwardTraceFinder(object):
     def __init__(self, activation_log):
         self._activation_log = activation_log
         self._fact_map = defaultdict(list)
-        for rule, src_facts in activation_log.get_activations():
-            for target_fact in activation_log.resolve_asserted_facts(rule, src_facts):
+        for rule, src_facts, target_fact in activation_log.get_activations():
+            if target_fact is not None:
                 self._fact_map[target_fact._clips_index()].append((rule, src_facts))
         self._cache = {}
         self._known_fact_indices = set()

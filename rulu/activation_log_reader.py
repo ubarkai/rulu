@@ -13,6 +13,7 @@ from contextlib import contextmanager
 from actions import Assert
 from expr import BaseExpr
 from ruledef import RuleDef
+from utils import LispExpr
 
 
 class ActivationLogReader(object):
@@ -26,9 +27,6 @@ class ActivationLogReader(object):
 
     def clear(self):
         clips.TraceStream.Read()
-        self.environment.DebugConfig.ActivationsWatched = True
-        self._python_assertion_trace = defaultdict(list)
-        self._python_key = None
 
     def find_fact(self, fact_type, **kwargs):
         """
@@ -48,41 +46,18 @@ class ActivationLogReader(object):
         """
         self._read_facts()
         self._read_rules()
-        activation_re = re.compile('==> Activation (\-?\d+)\s+([\w@]+): ([f\-\d\,]+)')
+        activation_re = re.compile('>>> ([\w\d@]+) ((?:\d+ )+)=(.+)$')
+        fact_index_re = re.compile('<Fact-(\d+)>')
         for line in clips.TraceStream.Read().splitlines():
-            if line.startswith('<=='):
+            rule_name, src_fact_ids, target_fact = activation_re.match(line).groups()
+            if target_fact == 'FALSE':
                 continue
-            salience, rule_name, src_fact_ids = activation_re.match(line).groups()
             rule = self.rule_by_name[rule_name]
-            src_facts = [self.fact_by_index[int(fact_id.rsplit('-', 1)[1])]
-                         for fact_id in src_fact_ids.split(',') if fact_id.startswith('f-')]
-            yield rule, src_facts
+            src_facts = [self.fact_by_index[int(fact_id)] for fact_id in src_fact_ids.split()]
+            match = fact_index_re.match(target_fact)
+            target_fact = self.fact_by_index[int(match.group(1))] if match else None
+            yield rule, src_facts, target_fact
             
-    def resolve_asserted_facts(self, rule, src_facts):
-        """
-        Find the facts that are asserted (using the Assert action) by a given rule 
-        and specific source facts. 
-        """
-        field_map = {}
-        fact_map = {}
-        premises = rule.premises.values()
-        premises.sort(key=lambda p:p.var_name)
-        for premise, fact in zip(premises, src_facts):
-            premise.container._update_python_param(fact_map, fact)
-            for key, value in fact._as_dict().iteritems():
-                field_map[getattr(premise.container, key)] = value
-
-        for action in rule.actions:
-            if isinstance(action, Assert):
-                params = action.replace_fields(field_map).data
-                fact = self.find_fact(rule.target, **params)
-                if fact is not None:
-                    yield fact
-
-        for fact_id in self._python_assertion_trace[self._trace_key(rule, src_facts)]:
-            yield self.fact_by_index[fact_id]
-
-
     def _read_facts(self):
         """ Read and index all facts. """
         self.fact_by_index = {}
@@ -95,15 +70,16 @@ class ActivationLogReader(object):
         self.rule_by_name = {rule_def._rule.clips_name: rule_def._rule
                              for rule_def in RuleDef._all_instances}
 
-    @contextmanager
-    def _trace_asserts(self, rule, facts):
-        self._python_key = self._trace_key(rule, facts)
-        yield
-        self._python_key = None
 
-    @staticmethod
-    def _trace_key(rule, facts):
-        return tuple([rule.name] + sorted(f._clips_index() for f in facts))
-
-    def _add_python_assert(self, fact):
-        self._python_assertion_trace[self._python_key].append(fact._clips_index())
+def _add_trace_to_actions(rule_name, source_premises, actions_lisp):
+    # Using custom prints instead of standard CLIPS activations log, which does not link activations to asserted facts
+    for n, action in enumerate(actions_lisp):
+        print_args = ['">>> "', '"'+rule_name+' "']
+        for premise in source_premises.values():
+            if not premise.negative:
+                print_args.extend([LispExpr("fact-index", premise.var_name), '" "'])
+        print_args.extend(["=", action])
+        if action.values[0] in ('modify', 'delete'):
+            print_args.append(LispExpr('fact-index', actions_lisp[0].values[1]))
+        print_args.append('crlf')
+        actions_lisp[n] = LispExpr('printout', 'wtrace', *print_args)

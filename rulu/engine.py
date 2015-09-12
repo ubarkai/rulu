@@ -35,8 +35,6 @@ class RuleEngine(object):
             raise TypeError('{} is not a fact type.'.format(fact_type))
         fact = fact_type(**values)
         self.environment.Assert(fact._clips_obj)
-        if self.activation_log_reader:
-            self.activation_log_reader._add_python_assert(fact)
         return fact
         
     def run(self):
