@@ -59,6 +59,8 @@ class RuleFunc(object):
                 # Register error to be raised later by engine
                 cls = type(self)
                 type(self)._last_error = sys.exc_info()
+                # Abort CLIPS execution
+                engine.environment.Clear()
         wrapper.__name__ = self._counters.setdefault(self.func_name, UniqueIdCounter(self.func_name+'_')).next()
         return wrapper
     

@@ -1,7 +1,6 @@
 import clips
 import os
 
-from activation_log_reader import ActivationLogReader
 from def_module_loader import DefModuleLoader
 from fact import Fact, RULU_INTERNAL_PREFIX
 from func import RuleFunc
@@ -9,13 +8,12 @@ from utils import RuleEngineError, logger
 
 
 class RuleEngine(object):
-    def __init__(self, trace=False):
+    def __init__(self):
         self.environment = clips.Environment()
         self.logger = logger.getChild(type(self).__name__)
         self.clips_types = {}
         self.preprocess_funcs = []
         self.postprocess_funcs = []
-        self.activation_log_reader = ActivationLogReader(self) if trace else None
         RuleFunc._register_engine(self)
 
     def load_module(self, module_name, package=None, auto_salience=False, debug_rules=False):

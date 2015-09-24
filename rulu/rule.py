@@ -179,8 +179,8 @@ class Rule(object):
             self.name = '_anonymous_rule'
         rule_num = sum(1 for rule_name in engine.get_rule_names() if rule_name.startswith(self.name+'@'))
         self.clips_name = '{}@{}'.format(self.name, rule_num+1)
-        lhs = str(self._build_lhs())
-        rhs = str(self._build_rhs(engine.activation_log_reader))
+        lhs = self._build_lhs()
+        rhs = self._build_rhs()
         logger.getChild('rule').debug('Creating rule: %s\n<%s\n%s\n%s>\n%s',
                 self.clips_name, '='*20, lhs, '='*20, rhs)
         self.clips_rule = engine.environment.BuildRule(self.clips_name, lhs, rhs, self.comments)
@@ -235,13 +235,15 @@ class Rule(object):
         lhs.extend(condition.replace_fields(self.variable_map).to_lisp() for condition in self.conditions) 
         return '\n'.join(str(x) for x in lhs)
     
-    def _build_rhs(self, activation_log_reader):
-        from activation_log_reader import _add_trace_to_actions
+    def _build_rhs(self):
         actions_lisp = [action.replace_fields(self.variable_map).to_lisp() for action in self.actions]
-        if activation_log_reader is not None:
-            _add_trace_to_actions(self.clips_name, self.premises, actions_lisp)
+        self._postprocess_actions(actions_lisp)
         return '\n'.join(map(str, actions_lisp))
-    
+
+    def _postprocess_actions(self, actions_lisp):
+        # Placeholder for trace plugin
+        pass
+
     def _make_field_map(self):
         return {}
     
