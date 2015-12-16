@@ -42,7 +42,7 @@ class DefModuleLoader(object):
         # Add name to all unnamed instances (according to variable name)
         for name in dir(module):
             entity = getattr(module, name)
-            if isinstance(entity, RuleDef):
+            if isinstance(entity, RuleDef) and entity._rule.name is None:
                 entity._set_name(name) # TODO: include module name
 
         if auto_salience:
