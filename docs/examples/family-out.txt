@@ -1,0 +1,6 @@
+Enos is the grandfather of Mahalalel.
+Seth is the grandfather of Kenan.
+Adam is the grandfather of Enos.
+Adam is the great-grandfather of Kenan.
+Seth is the great-grandfather of Mahalalel.
+Adam is the great-great-grandfather of Mahalalel.

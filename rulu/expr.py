@@ -1,5 +1,5 @@
 from utils import Printable, RuleEngineError
-from typedefs import Boolean, DateTime, Integer, Number, String, Unicode, Symbol
+from typedefs import Boolean, DateTime, Integer, Multifield, Number, String, Unicode, Symbol
 
 class BaseExpr(Printable):
     def __init__(self, all_fields=[]):
@@ -112,6 +112,7 @@ class SymbolField(FieldExpr): _type = Symbol
 class UnicodeField(FieldExpr): _type = Unicode
 class BooleanField(FieldExpr): _type = Boolean
 class DateTimeField(FieldExpr): _type = DateTime
+class MultiField(FieldExpr): _type = Multifield
 
 class VariableExpr(BaseExpr):
     def __init__(self, var_name, var_type):

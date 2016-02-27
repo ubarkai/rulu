@@ -5,7 +5,7 @@ from class_ import Class, InstanceField
 from clips_func import *
 from conditional_expr import if_then_else
 from expr import (IntegerField, NumberField, StringField, UnicodeField, SymbolField,
-                  BooleanField, DateTimeField, TRUE, FALSE, UNKNOWN_BOOL)
+                  BooleanField, DateTimeField, MultiField, TRUE, FALSE, UNKNOWN_BOOL)
 from fact import Fact
 from func import (RuleFunc, TypedRuleFunc, BooleanRuleFunc, IntegerRuleFunc,
                   NumberRuleFunc, StringRuleFunc)
