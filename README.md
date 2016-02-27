@@ -8,10 +8,8 @@ Rulu is implemented over [PyCLIPS](http://pyclips.sourceforge.net/web/), the Pyt
 
 Installation
 ============
-1. Download **PyCLIPS** from [here](http://sourceforge.net/projects/pyclips/files/pyclips/pyclips-1.0/)
-2. Install **PyCLIPS**: `python setup.py install`
-3. `pip install rulu`
+`pip install rulu`
 
-Quickstart
-==========
-TODO: Write me
+Documentation
+=============
+Rulu documentation may be found [here](http://rulu.readthedocs.org/en/latest/)
