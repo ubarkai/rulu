@@ -2,7 +2,7 @@ from collections import defaultdict
 from functools import partial
 
 from actions import Assert
-from expr import FieldExpr, VariableExpr, IntegerField
+from expr import FieldExpr, VariableExpr, IntegerField, normalize_expr
 from fact import Fact, FactExpr, RULU_INTERNAL_PREFIX
 from func import RuleFunc
 from operators import Condition
@@ -42,6 +42,9 @@ class RulePremise(object):
     def build_target_field(self):
         return LispExpr(self.target_field_name, self.target_field_var)
 
+    def replace_values(self, mapping):
+        self.field_values = {(field, mapping.get(value, value)) for field, value in self.field_values}
+
 
 class Rule(object):
     def __init__(self):
@@ -52,6 +55,7 @@ class Rule(object):
         self.target_fields = None
         self.salience = None
         self.variable_map = {}
+        self.variable_values = {}
         self.conditions = []
         self.actions = []
         self.python_actions = []
@@ -96,19 +100,25 @@ class Rule(object):
     def set_salience(self, salience):
         self.salience = salience
         
-    def add_variable(self, *fields):
+    def add_variable(self, *exprs):
+        free_value = None
         matching_var_names = set()
-        for field in sorted(fields, key=str):
-            if not isinstance(field, (FieldExpr, FactExpr)):
-                raise TypeError('Exepected field or fact, found {}'.format(field))
-            try:
-                matching_var_names.add(self.variable_map[field].var_name)
-            except KeyError:
-                pass
+        for expr in sorted(exprs, key=str):
+            if isinstance(expr, (FieldExpr, FactExpr)):
+                try:
+                    matching_var_names.add(self.variable_map[expr].var_name)
+                except KeyError:
+                    pass
+            else:
+                expr = normalize_expr(expr)
+                if free_value is None:
+                    free_value = expr
+                elif free_value != expr:
+                    raise ValueError('Conflicting unbound values: {}, {}'.format(free_value, expr))
         
         if not matching_var_names:
             var_name = self.general_varnames.next()
-            if fields[0].get_type() is Multifield:
+            if exprs[0].get_type() is Multifield:
                 var_name = '$' + var_name
         else:
             var_names = sorted(matching_var_names)
@@ -116,12 +126,16 @@ class Rule(object):
             for prev_var_name in var_names[1:]:
                 self._replace_variable(prev_var_name, var_name)
 
-        for field in fields:
-            if isinstance(field, FactExpr):
-                self.set_premise(field.fact)
-            else:
-                self.set_premise(field.container).add(field, var_name)
-                self.variable_map[field] = VariableExpr(var_name, field.get_type())
+        for expr in exprs:
+            if isinstance(expr, FactExpr):
+                self.set_premise(expr.fact)
+                if free_value is not None:
+                    raise ValueError('Type mismatch: {}, {}'.format(expr, free_value))
+            elif isinstance(expr, FieldExpr):
+                self.set_premise(expr.container).add(expr, var_name)
+                self.variable_map[expr] = VariableExpr(var_name, expr.get_type())
+                if free_value is not None:
+                    self.variable_values[var_name] = free_value
         return var_name
     
     def add_condition(self, expr):
@@ -162,10 +176,6 @@ class Rule(object):
         
     def add_secondary_rule(self, rule):
         self.secondary_rules.append(rule)
-            
-    def _replace_variable(self, prev_var_name, var_name):
-        # TODO: Implement this
-        raise NotImplementedError()
 
     @wrap_clips_errors
     def build(self, engine):
@@ -174,7 +184,7 @@ class Rule(object):
         self._init_aggregators(engine)
         if self.python_actions:
             target_name = self.target._name if self.target else None
-            self._add_python_action(engine, target_name)
+            self._add_python_action(engine)
         if self.name is None:
             self.name = '_anonymous_rule'
         rule_num = sum(1 for rule_name in engine.get_rule_names() if rule_name.startswith(self.name+'@'))
@@ -222,8 +232,8 @@ class Rule(object):
             finalize_rule.build(engine)
             self.finalize_rules.append(finalize_rule)
             
-    def _add_python_action(self, engine, target_name):
-        func = RuleFunc(partial(self._action, engine), Integer, 'target_{}'.format(target_name))
+    def _add_python_action(self, engine):
+        func = RuleFunc(partial(self._action, engine), Integer, '_'.join(x.__name__ for x in self.python_actions))
         params = [premise.container for premise in self.premises.itervalues() if not premise.negative]
         self.actions.append(func(*params).replace_fields(self.variable_map))
         
@@ -231,7 +241,9 @@ class Rule(object):
         lhs = []
         if self.salience is not None:
             lhs.append(LispExpr('declare', LispExpr('salience', self.salience)))
-        lhs.extend(premise.build_str() for premise in sorted(self.premises.itervalues(), key=lambda p:p.var_name))
+        for premise in sorted(self.premises.itervalues(), key=lambda p:p.var_name):
+            premise.replace_values(self.variable_values)
+            lhs.append(premise.build_str())
         lhs.extend(condition.replace_fields(self.variable_map).to_lisp() for condition in self.conditions) 
         return '\n'.join(str(x) for x in lhs)
     

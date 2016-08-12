@@ -4,12 +4,6 @@ from setuptools.command.test import test as TestCommand
 from os import path
 
 
-here = path.abspath(path.dirname(__file__))
-
-with open(path.join(here, 'VERSION')) as version_file:
-    version = version_file.read().strip()
-    
-
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
@@ -24,7 +18,7 @@ class PyTest(TestCommand):
 
 setup(
     name='rulu',
-    version=version,
+    version='0.1.2',
     url='http://github.com/ubarkai/rulu',
     license='LGPL',
     author='Uri Barkai',
