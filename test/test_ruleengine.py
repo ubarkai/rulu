@@ -20,8 +20,8 @@ class BaseRuleEngineTest(TestCase):
     def setUp(self):
         logging.basicConfig(level=logging.DEBUG)
 
-    def _engine_test(self, ruledef, input, expected_output=None, trace=False):  # @ReservedAssignment
-        engine = self._make_engine(ruledef, trace=trace)
+    def _engine_test(self, ruledef, input, expected_output=None):  # @ReservedAssignment
+        engine = self._make_engine(ruledef)
         engine.load(resource_filename(inputs.__name__, input))
         engine.run_one_cycle()
         actual_facts = self._get_facts(engine)
@@ -34,8 +34,8 @@ class BaseRuleEngineTest(TestCase):
             self.assertEqual(expected_facts, actual_facts)
         return engine
 
-    def _make_engine(self, ruledef, trace=False):
-        engine = RuleEngine(trace=trace)
+    def _make_engine(self, ruledef):
+        engine = RuleEngine()
         engine.load_module(ruledef, ruledefs)
         return engine
 
@@ -84,6 +84,9 @@ class RuleEngineTests(BaseRuleEngineTest):
         
     def testUpdateDeletePython(self):
         self._engine_test(ruledef='update_delete_python', input='pairs.txt', expected_output='aggregates.txt')
+
+    def testMatchConst(self):
+        self._engine_test(ruledef='match_const', input='consts.txt', expected_output='consts.txt')
         
     def testClassesWithPythonFunc(self):
         nearest_distance_rules.make_rule = nearest_distance_rules.python_func_distance_rule

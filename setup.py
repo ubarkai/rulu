@@ -18,7 +18,7 @@ class PyTest(TestCommand):
 
 setup(
     name='rulu',
-    version='0.1.2',
+    version='0.1.3',
     url='http://github.com/ubarkai/rulu',
     license='LGPL',
     author='Uri Barkai',

@@ -135,7 +135,7 @@ class Rule(object):
                 self.set_premise(expr.container).add(expr, var_name)
                 self.variable_map[expr] = VariableExpr(var_name, expr.get_type())
                 if free_value is not None:
-                    self.variable_values[var_name] = free_value
+                    self.variable_values[var_name] = free_value.to_lisp()
         return var_name
     
     def add_condition(self, expr):
@@ -151,6 +151,8 @@ class Rule(object):
         self.actions.append(action)
                 
     def add_python_action(self, function):
+        if function.__name__ == '<lambda>':
+            function.__name__ = 'lambda'
         self.python_actions.append(function)
         
     def add_aggregator_cls(self, aggregator_cls):

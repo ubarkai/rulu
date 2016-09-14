@@ -2,6 +2,7 @@ import logging
 from pkg_resources import resource_filename
 
 import inputs
+import ruledefs
 from rulu.engine import RuleEngine
 from rulu.rulu_io import facts_to_df
 from unittest import TestCase
@@ -11,7 +12,7 @@ logging.basicConfig(level=logging.DEBUG)
 class RuleEngineIoTests(TestCase):
     def setUp(self):
         self.engine = RuleEngine()
-        self.engine.load_module('family', 'ruledefs')
+        self.engine.load_module('family', ruledefs)
         self.engine.load(resource_filename(inputs.__name__, 'fathers.txt'))
         
     def test_df(self):
