@@ -1,0 +1,2 @@
+(OutputStr (str "b"))
+(OutputNum (num 1))

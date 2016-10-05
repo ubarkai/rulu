@@ -1,0 +1,2 @@
+(TestFact (str "a") (num 1))
+(TestFact (str "b") (num 2))
