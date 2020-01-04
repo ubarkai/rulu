@@ -4,9 +4,10 @@ conversions from and to Python types.
 """
 
 from calendar import timegm
-from collections import Iterable
+from collections.abc import Iterable
 from datetime import datetime
 import clips
+
 
 class RuleEngineType(object):
     """
@@ -31,11 +32,13 @@ class RuleEngineType(object):
         """ Convert from Python value to CLIPS value """
         return x
 
+
 class Integer(RuleEngineType):
     PYTHON_TYPE = int
     PYTHON_TYPE_CHECK = int
     CLIPS_TYPE = 'INTEGER'
     
+
 class Boolean(Integer):
     PYTHON_TYPE = bool
     PYTHON_TYPE_CHECK = bool
@@ -56,24 +59,27 @@ class Boolean(Integer):
     def _from_clips_value(cls, x):
         return str(x) == 'TRUE'
 
-class Number(RuleEngineType): 
+
+class Number(RuleEngineType):
     PYTHON_TYPE = float
     PYTHON_TYPE_CHECK = (int, float)
     CLIPS_TYPE = 'NUMBER'
     
+
 class String(RuleEngineType):
     PYTHON_TYPE = str
-    PYTHON_TYPE_CHECK = basestring
+    PYTHON_TYPE_CHECK = str
     CLIPS_TYPE = 'STRING'
     
+
 class Unicode(RuleEngineType):
     """
     Unicode string.
     PyCLIPS does not support Unicode values, so we take of the encoding/decoding here 
     """
     ENCODING = 'utf8'
-    PYTHON_TYPE = unicode
-    PYTHON_TYPE_CHECK = basestring
+    PYTHON_TYPE = str
+    PYTHON_TYPE_CHECK = str
     CLIPS_TYPE = 'STRING'
     
     @classmethod
@@ -84,9 +90,11 @@ class Unicode(RuleEngineType):
     def _from_clips_value(cls, x):
         return x.decode(cls.ENCODING)
     
+
 class Symbol(String):
     CLIPS_TYPE = 'SYMBOL'
     
+
 class DateTime(RuleEngineType):
     """
     Date-time object. 
@@ -105,6 +113,7 @@ class DateTime(RuleEngineType):
     def _from_clips_value(cls, x):
         return datetime.utcfromtimestamp(x)
     
+
 class Multifield(RuleEngineType):
     """
     Multifield type. Maps to Python list.
@@ -117,6 +126,8 @@ class Multifield(RuleEngineType):
     def _to_clips_value(cls, x):
         return clips.Multifield(x)
      
+
 class FactIndexType(RuleEngineType): pass
+
 
 TYPE_MAP = {t.PYTHON_TYPE: t for t in (Integer, Number, String, Boolean, DateTime)}

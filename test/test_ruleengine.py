@@ -8,10 +8,10 @@ from rulu.builtin_aggregations import UNIQUE_INDEX_FIELD
 from rulu.engine import RuleEngine
 from rulu.slots import HasSlots
 
-import inputs
-import expected_outputs
-import ruledefs
-from ruledefs import nearest_distance_rules
+from . import inputs
+from . import expected_outputs
+from . import ruledefs
+from .ruledefs import nearest_distance_rules
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -45,7 +45,7 @@ class BaseRuleEngineTest(TestCase):
             values = fact._as_dict()
             values.pop('_id', None)
             values.pop(UNIQUE_INDEX_FIELD, None)
-            for key, value in values.iteritems():
+            for key, value in values.items():
                 if isinstance(value, HasSlots):
                     values[key] = value._as_dict()
             res.append('{} / {}'.format(fact._name, values))

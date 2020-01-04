@@ -1,10 +1,11 @@
-from expr import BaseExpr, VariableExpr, normalize_expr
-from typedefs import Boolean, Integer, Number
-from utils import LispExpr, RuleEngineError
+from .expr import BaseExpr, VariableExpr, normalize_expr
+from .typedefs import Boolean, Integer, Number
+from .utils import LispExpr, RuleEngineError
+
 
 class BaseBinaryOperator(BaseExpr):
     def __init__(self, op, *args):
-        super(BaseBinaryOperator, self).__init__(all_fields=set().union(*(arg.all_fields for arg in args)))
+        super().__init__(all_fields=set().union(*(arg.all_fields for arg in args)))
         self.op = op
         self.args = args
         
@@ -17,6 +18,7 @@ class BaseBinaryOperator(BaseExpr):
     def __str__(self):
         return '({} {} {})'.format(self.lhs, self.op, self.rhs)
     
+
 class ArithmeticBinaryOperator(BaseBinaryOperator, BaseExpr):
     def get_type(self):
         lhs_type, rhs_type = [arg.get_type() for arg in self.args]
@@ -26,14 +28,16 @@ class ArithmeticBinaryOperator(BaseBinaryOperator, BaseExpr):
             raise RuleEngineError('Illegal operator "{}" on {} and {}'.format(
                     self.op.__name__, self.lhs.get_type(), self.rhs.get_type()))
     
+
 class BooleanBinaryOperator(BaseBinaryOperator, BaseExpr):
     def get_type(self):
         return Boolean
     
+
 class Condition(BaseExpr):
     def __init__(self, expr):
         expr = normalize_expr(expr)
-        super(Condition, self).__init__(all_fields=expr.all_fields)
+        super().__init__(all_fields=expr.all_fields)
         if expr.get_type() is not Boolean:
             raise RuleEngineError('Condition must be of boolean type. Got "{}", which is {}'.format(expr, expr.get_type()))
         self.expr = expr
@@ -53,9 +57,10 @@ class Condition(BaseExpr):
     def __str__(self):
         return 'Condition <{}>'.format(self.expr)
     
+
 class UnaryOperator(BaseExpr):
     def __init__(self, expr, op):
-        super(UnaryOperator, self).__init__(all_fields=expr.all_fields)
+        super().__init__(all_fields=expr.all_fields)
         self.expr = expr
         self.op = op
         
@@ -71,6 +76,7 @@ class UnaryOperator(BaseExpr):
         
     def __str__(self):
         return '({} {})'.format(self.op, self.expr)
+
 
 or_ = lambda *args: BooleanBinaryOperator('or', *(normalize_expr(arg) for arg in args))
 and_ = lambda *args: BooleanBinaryOperator('and', *(normalize_expr(arg) for arg in args))

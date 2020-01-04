@@ -19,7 +19,7 @@ class SumByFirstAgg(Aggregator):
         self.data[Pair.first] += Pair.second
         
     def finalize(self, assert_):
-        for first, total in self.data.iteritems():
+        for first, total in self.data.items():
             assert_(first=first, value=total)
 
 MaxByFirst = RuleDef(

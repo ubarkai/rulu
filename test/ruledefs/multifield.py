@@ -10,7 +10,7 @@ Grouped = RuleDef(
 )
 
 @IntegerRuleFunc
-def python_sum(values):
+def python_sum(*values):
     return sum(values)
 
 Sum = RuleDef(

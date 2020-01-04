@@ -1,9 +1,11 @@
-from expr import BaseExpr, normalize_expr
-from utils import RuleEngineError, LispExpr
+from functools import reduce
+from .expr import BaseExpr, normalize_expr
+from .utils import RuleEngineError, LispExpr
+
 
 class ConditionalExpr(BaseExpr):
     def __init__(self, *args):
-        self.args = map(normalize_expr, args)
+        self.args = list(map(normalize_expr, args))
         types = {arg.get_type() for arg in self.args[1:3]}
         if len(types) != 1:
             raise RuleEngineError("Different return types: {}".format(types))
@@ -24,6 +26,7 @@ class ConditionalExpr(BaseExpr):
     
     def __str__(self):
         return '({} ? {} : {})'.format(*map(str, self.args))
+
 
 def if_then_else(condition, then, else_):
     return ConditionalExpr(condition, then, else_)

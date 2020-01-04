@@ -12,7 +12,7 @@ class Node(Fact):
 def calc_dist(p1, p2):
     return float((p1.X-p2.X)**2 + (p1.Y-p2.Y)**2) ** .5
 
-import nearest_distance_rules
+from . import nearest_distance_rules
 Distance = nearest_distance_rules.make_rule(Node)
 
 Nearest = RuleDef(

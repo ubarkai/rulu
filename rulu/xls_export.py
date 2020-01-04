@@ -1,5 +1,5 @@
-from utils import RuleEngineError, logger
-from progress_bar import LogProgressBar
+from .utils import RuleEngineError, logger
+from .progress_bar import LogProgressBar
 
 try:
     import xlwt
@@ -7,6 +7,7 @@ except ImportError:
     raise NotImplementedError('xlwt must be installed to support export to Excel')
 
 _logger = logger.getChild(__name__)
+
 
 class ExportSheetWriter(object):
     def __init__(self, workbook, sheet_name, max_rows_in_sheet):
@@ -30,6 +31,7 @@ class ExportSheetWriter(object):
         for nfield, field in enumerate(self.fields):
             self.sheet.write(self.nrows, nfield, fact[field])
             
+
 def read_fact_file(facts_filename):
     with open(facts_filename) as f:
         num_facts = sum(1 for _ in f)
@@ -48,6 +50,7 @@ def read_fact_file(facts_filename):
                 fact[key] = value
             yield template_name, fact
             progress_bar.increment()    
+
 
 def export_facts_to_xls(facts_filename, out_filename, max_rows_in_sheet=10000):
     workbook = xlwt.Workbook()

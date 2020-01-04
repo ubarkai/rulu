@@ -1,14 +1,15 @@
 from collections import defaultdict
 from functools import partial
 
-from actions import Assert
-from expr import FieldExpr, VariableExpr, IntegerField, normalize_expr
-from fact import Fact, FactExpr, RULU_INTERNAL_PREFIX
-from func import RuleFunc
-from operators import Condition
-from slots import make_slotted_type
-from typedefs import TYPE_MAP, FactIndexType, Integer, Multifield
-from utils import LispExpr, RuleEngineError, UniqueIdCounter, logger, wrap_clips_errors
+from .actions import Assert
+from .expr import FieldExpr, VariableExpr, IntegerField, normalize_expr
+from .fact import Fact, FactExpr, RULU_INTERNAL_PREFIX
+from .func import RuleFunc
+from .operators import Condition
+from .slots import make_slotted_type
+from .typedefs import TYPE_MAP, FactIndexType, Integer, Multifield
+from .utils import LispExpr, RuleEngineError, UniqueIdCounter, logger, wrap_clips_errors
+
 
 class RulePremise(object):
     def __init__(self, container, var_name):
@@ -25,7 +26,7 @@ class RulePremise(object):
         self.negative = True
         
     def build_lisp(self):
-        field_values = sorted(self.field_values, key = lambda (field, value) : str(field))
+        field_values = sorted(self.field_values, key = lambda field_value : str(field_value[0]))
         res = LispExpr(self.container._name, *(LispExpr(field.name, value) for field, value in field_values))
         if self.negative:
             res = LispExpr('not', res)
@@ -85,7 +86,7 @@ class Rule(object):
     def set_target_fields(self, **fields):
         if self.target is not None:
             raise RuleEngineError('Target already set')
-        self.target_fields = {key: FieldExpr(_type=TYPE_MAP.get(_type, _type)) for key, _type in fields.iteritems()}
+        self.target_fields = {key: FieldExpr(_type=TYPE_MAP.get(_type, _type)) for key, _type in fields.items()}
         self.target = make_slotted_type(Fact, self.name, **self.target_fields)
         
     def get_target_fields(self):
@@ -195,7 +196,11 @@ class Rule(object):
         rhs = self._build_rhs()
         logger.getChild('rule').debug('Creating rule: %s\n<%s\n%s\n%s>\n%s',
                 self.clips_name, '='*20, lhs, '='*20, rhs)
-        self.clips_rule = engine.environment.BuildRule(self.clips_name, lhs, rhs, self.comments)
+        if self.comments:
+            import pudb; pudb.set_trace()  # TODO: Fix clipspy
+        lisp = LispExpr('defrule', self.clips_name, lhs, '=>', rhs)
+        engine.environment.build(str(lisp))
+        self.clips_rule = engine.environment.find_rule(self.clips_name)
         for secondary_rule in self.secondary_rules:
             secondary_rule.build(engine)
 
@@ -236,14 +241,14 @@ class Rule(object):
             
     def _add_python_action(self, engine):
         func = RuleFunc(partial(self._action, engine), Integer, '_'.join(x.__name__ for x in self.python_actions))
-        params = [premise.container for premise in self.premises.itervalues() if not premise.negative]
+        params = [premise.container for premise in self.premises.values() if not premise.negative]
         self.actions.append(func(*params).replace_fields(self.variable_map))
         
     def _build_lhs(self):
         lhs = []
         if self.salience is not None:
             lhs.append(LispExpr('declare', LispExpr('salience', self.salience)))
-        for premise in sorted(self.premises.itervalues(), key=lambda p:p.var_name):
+        for premise in sorted(self.premises.values(), key=lambda p:p.var_name):
             premise.replace_values(self.variable_values)
             lhs.append(premise.build_str())
         lhs.extend(condition.replace_fields(self.variable_map).to_lisp() for condition in self.conditions) 
@@ -263,7 +268,7 @@ class Rule(object):
     
     def _action(self, _engine, *facts):
         params = {}
-        vars = [var for var, premise in self.premises.iteritems() if not premise.negative]
+        vars = [var for var, premise in self.premises.items() if not premise.negative]
         for var, fact in zip(vars, facts):
             var._update_python_param(params, fact)
         if self.target is not None:

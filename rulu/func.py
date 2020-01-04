@@ -6,9 +6,10 @@ so that they can be called inside rules (in conditions, assertions etc.)
 import clips
 import functools
 import sys
-from clips_func import PythonFuncExpr
-from typedefs import Boolean, String, Integer, Number
-from utils import UniqueIdCounter, logger
+from .clips_func import PythonFuncExpr
+from .typedefs import Boolean, String, Integer, Number
+from .utils import UniqueIdCounter, logger
+
 
 class RuleFunc(object):
     """
@@ -35,7 +36,7 @@ class RuleFunc(object):
         wrapper = self._wrapper_by_engine.get(self._cur_engine)
         if wrapper is None:
             wrapper = self._create_wrapper(self._cur_engine)
-            clips.RegisterPythonFunction(wrapper)
+            self._cur_engine.environment.define_function(wrapper)
         return PythonFuncExpr(wrapper.__name__, self.type, *args)
     
     def _create_wrapper(self, engine):
@@ -49,7 +50,7 @@ class RuleFunc(object):
                 return
             try:
                 args = [(engine._wrap_clips_instance(arg) if isinstance(arg, 
-                    (clips.Fact, clips.InstanceName)) else arg) for arg in args]
+                    (clips.TemplateFact, clips.InstanceName)) else arg) for arg in args]
                 res = self.func(*args)
                 self._num_calls += 1
                 if self._num_calls % self.NUM_CALLS_PER_PRINT == 0:
@@ -81,7 +82,7 @@ class RuleFunc(object):
     @classmethod
     def _check_error(cls):
         if cls._last_error:
-            raise cls._last_error[0], cls._last_error[1], cls._last_error[2]
+            raise cls._last_error[0](cls._last_error[1]).with_traceback(cls._last_error[2])
 
 TypedRuleFunc = lambda return_type : functools.partial(RuleFunc, return_type=return_type)
 
@@ -90,4 +91,3 @@ BooleanRuleFunc = TypedRuleFunc(Boolean)
 IntegerRuleFunc = TypedRuleFunc(Integer)
 NumberRuleFunc = TypedRuleFunc(Number)
 StringRuleFunc = TypedRuleFunc(String)
-

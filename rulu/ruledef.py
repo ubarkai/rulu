@@ -1,13 +1,15 @@
 from bunch import Bunch
 from functools import wraps
 
-from aggregations import grouping_aggregator
-from expr import ConvertibleToExpr
-from fact import FactReference
-from rule import Rule
+from .aggregations import grouping_aggregator
+from .expr import ConvertibleToExpr
+from .fact import FactReference
+from .rule import Rule
+
 
 class RuleDef(FactReference, ConvertibleToExpr):
     _all_instances = []
+
     def __init__(self, *modifiers):
         self._rule = Rule()
         for modifier in modifiers:
@@ -47,10 +49,12 @@ class RuleDef(FactReference, ConvertibleToExpr):
     def _from_python_params(self, params):
         return self._rule.target._from_python_params(params)
 
+
 def rule_modifier(method):
     def modifier(*args, **kwargs):
         return wraps(method)(lambda rule : method(rule, *args, **kwargs))
     return modifier
+
 
 match = rule_modifier(Rule.add_variable)
 action = rule_modifier(Rule.add_action)
@@ -62,22 +66,26 @@ name = rule_modifier(Rule.set_name)
 description = rule_modifier(Rule.set_description)
 groupby = rule_modifier(Rule.set_groupby)
 
+
 @rule_modifier
 def target(rule, target):
     if isinstance(target, RuleDef):
         target = target._rule.target
     rule.set_target(target)
 
+
 @rule_modifier
 def foreach(rule, *containers):
     for container in containers:
         rule.set_premise(container)
 
+
 # Parameters passed from outside world to rule defintions
 params = Bunch()
 
+
 def delayed_set(field, from_value, to_value):
-    from actions import Update
+    from .actions import Update
     RuleDef(
         condition(field == from_value),
         salience(-1000),

@@ -7,7 +7,9 @@ import functools
 import logging
 import sys
 
+
 class RuleEngineError(Exception): pass
+
 
 def wrap_clips_errors(func):
     """
@@ -17,9 +19,10 @@ def wrap_clips_errors(func):
     def new_func(*a, **kw):
         try:
             return func(*a, **kw)
-        except clips.ClipsError:
-            raise RuleEngineError(clips.ErrorStream.Read()), None, sys.exc_info()[2]
+        except clips.CLIPSError as e:
+            raise RuleEngineError(str(e)).with_traceback(sys.exc_info()[2])
     return new_func
+
 
 class Printable(object):
     """ 
@@ -30,6 +33,7 @@ class Printable(object):
     
     def __repr__(self):
         return '<{} ({})>'.format(type(self).__name__, self) 
+
 
 class LispExpr(object):
     """
@@ -57,6 +61,7 @@ class LispExpr(object):
     def __repr__(self):
         return '<{} ({})>'.format(type(self), self) 
 
+
 class UniqueIdCounter(object):
     def __init__(self, prefix):
         self.prefix = prefix
@@ -65,5 +70,6 @@ class UniqueIdCounter(object):
     def next(self):
         self.count += 1
         return '{}{}'.format(self.prefix, self.count)
+
 
 logger = logging.getLogger('ruleengine')

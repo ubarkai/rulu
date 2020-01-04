@@ -1,11 +1,13 @@
 import clips
-from actions import Update
-from slots import HasSlots, SlotsMeta
-from expr import BaseExpr, ConvertibleToExpr
-from typedefs import FactIndexType
-from utils import Printable, wrap_clips_errors
+
+from .actions import Update
+from .slots import HasSlots, SlotsMeta
+from .expr import BaseExpr, ConvertibleToExpr
+from .typedefs import FactIndexType
+from .utils import LispExpr, Printable, wrap_clips_errors
 
 RULU_INTERNAL_PREFIX = '_rulu_internal'
+
 
 class FactReference(ConvertibleToExpr):
     def _update_python_param(self, params, value):
@@ -14,22 +16,26 @@ class FactReference(ConvertibleToExpr):
     def _from_python_params(self, params):
         raise NotImplementedError
 
+
 class FactMeta(SlotsMeta, FactReference):
     def __getitem__(self, key):
         return self._indexed_reference(key)
     
+
 indexed_references = {}
 
-class Fact(HasSlots):
-    __metaclass__ = FactMeta
-    CLIPS_INSTANCE_TYPE = clips.Fact
+
+class Fact(HasSlots, metaclass=FactMeta):
+    CLIPS_INSTANCE_TYPE = clips.facts.Fact
             
     @classmethod
     @wrap_clips_errors
     def _build(cls, engine):
         if cls is not Fact: 
             super(Fact, cls)._build(engine)
-            cls._clips_type = engine.environment.BuildTemplate(cls._name, cls._slots)
+            lisp = LispExpr('deftemplate', cls._name, cls._slots)
+            engine.environment.build(str(lisp))
+            cls._clips_type = engine.environment.find_template(cls._name)
         
     @classmethod
     def _to_expr(cls):
@@ -38,21 +44,25 @@ class Fact(HasSlots):
         return cls._fact_expr
 
     def _create_clips_obj(self):
-        return self._clips_type.BuildFact()
+        return self._clips_type.new_fact()
 
     def _copy_clips_obj(self, obj):
-        return obj if hasattr(obj, '_Fact__env') else self._environment.Fact(obj)
+        return obj # Old: obj if hasattr(obj, '_Fact__env') else self._environment.Fact(obj)
     
     def _clips_index(self):
-        return self._clips_obj.Index
+        return self._clips_obj.index
     
     def _delete(self):
-        self._clips_obj.Retract()
+        self._clips_obj.retract()
         
     def _update(self, **kwargs):
-        cmd = Update(self._clips_obj.Index, **kwargs).to_lisp()
-        self._environment.SendCommand(str(cmd))
-        
+        for key in self._fields:
+            kwargs.setdefault(key, self._clips_obj[key])
+        self._clips_obj.retract()
+        self._clips_obj = self._init_values(**kwargs)
+        self._clips_obj.assertit()
+        self._data = self._init_data()
+
     @classmethod
     def _update_python_param(cls, params, value):
         params[cls._name] = value
@@ -65,13 +75,14 @@ class Fact(HasSlots):
     def _indexed_reference(cls, index):
         return indexed_references.setdefault((cls, index), IndexedFactReference(cls, index))
 
+
 class IndexedFactReference(Printable, FactReference):
     def __init__(self, template_cls, key):
         self._template_cls = template_cls
         self._key = key
         self._fields = {}
         self._fact_expr = FactExpr(self)
-        for key, field in template_cls._fields.iteritems():
+        for key, field in template_cls._fields.items():
             new_field = type(field)(_type=field.get_type())
             new_field._init(self, key)
             self._fields[key] = new_field
@@ -93,9 +104,10 @@ class IndexedFactReference(Printable, FactReference):
     def _name(self):
         return self._template_cls._name
     
+
 class FactExpr(BaseExpr):
     def __init__(self, fact):
-        super(FactExpr, self).__init__(all_fields=[self])
+        super().__init__(all_fields=[self])
         self.fact = fact
         
     def __str__(self):

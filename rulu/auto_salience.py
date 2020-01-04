@@ -1,7 +1,8 @@
 from collections import defaultdict
-from fact import IndexedFactReference
-from ruledef import RuleDef
-from utils import RuleEngineError
+from .fact import IndexedFactReference
+from .ruledef import RuleDef
+from .utils import RuleEngineError
+
 
 def auto_set_salience(ruledefs):
     dependencies = _get_dependencies(ruledefs)
@@ -9,6 +10,7 @@ def auto_set_salience(ruledefs):
     for n, rule in enumerate(order):
         rule.set_salience(-(n*2))
     
+
 def _get_dependencies(ruledefs):
     by_target = defaultdict(list)
     for ruledef in ruledefs:
@@ -29,6 +31,7 @@ def _get_dependencies(ruledefs):
         dependencies[rule].update(rule.secondary_rules)
 
     return dependencies
+
 
 # Adapted from networkx (https://networkx.github.io)
 def _topological_sort(dependencies):

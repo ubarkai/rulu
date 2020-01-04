@@ -1,10 +1,10 @@
 import clips
 import os
 
-from def_module_loader import DefModuleLoader
-from fact import Fact, RULU_INTERNAL_PREFIX
-from func import RuleFunc
-from utils import RuleEngineError, logger
+from .def_module_loader import DefModuleLoader
+from .fact import Fact, RULU_INTERNAL_PREFIX
+from .func import RuleFunc
+from .utils import RuleEngineError, logger
 
 
 class RuleEngine(object):
@@ -27,12 +27,12 @@ class RuleEngine(object):
         """ 
         Assert a new fact 
         """
-        if isinstance(fact_type, basestring):
+        if isinstance(fact_type, str):
             fact_type = self.clips_types.get(fact_type)
         if not issubclass(fact_type, Fact):
             raise TypeError('{} is not a fact type.'.format(fact_type))
         fact = fact_type(**values)
-        self.environment.Assert(fact._clips_obj)
+        fact._clips_obj.assertit()
         return fact
         
     def run(self):
@@ -53,7 +53,7 @@ class RuleEngine(object):
             self.logger.info('Running rule engine (%d steps)', limit_steps)
         else:
             self.logger.info('Running rule engine')
-        self.environment.Run(limit_steps)
+        self.environment.run(limit_steps)
         self.logger.info('Rule engine completed')
         RuleFunc._check_error()
         for postprocess_func in self.postprocess_funcs:
@@ -64,16 +64,16 @@ class RuleEngine(object):
         """
         Return an iterator over all known facts
         """
-        return (self._wrap_clips_instance(fact) for fact in self.environment.FactList()
-                if fact.Relation != 'initial-fact'
-                and not fact.Relation.startswith(RULU_INTERNAL_PREFIX))
+        return (self._wrap_clips_instance(fact) for fact in self.environment.facts()
+                if fact.template.name != 'initial-fact'
+                and not fact.template.name.startswith(RULU_INTERNAL_PREFIX))
             
     def get_facts(self, type_name):
         """
         Return an iterator over all known facts of given type
         """
-        return (self._wrap_clips_instance(fact) for fact in self.environment.FactList()
-                if fact.Relation == type_name)
+        return (self._wrap_clips_instance(fact) for fact in self.environment.facts()
+                if fact.template.name == type_name)
     
     def clear(self):
         self.environment.Clear()
@@ -93,10 +93,10 @@ class RuleEngine(object):
         """
         try:
             self.logger.debug('Loading facts from {}'.format(filename))
-            self.environment.LoadFacts(filename)
+            self.environment.load_facts(filename)
             instance_filename = _get_instance_filename(filename)
             if os.path.exists(instance_filename):
-                self.environment.LoadInstances(instance_filename)
+                self.environment.load_instances(instance_filename)
         except IOError:
             raise RuleEngineError('Error while loading {}.\n Error log:\n{}'.format(filename, clips.ErrorStream.Read()))
         
@@ -105,7 +105,7 @@ class RuleEngine(object):
         Save all facts and class instances to a text file in CLIPS format
         """
         self.logger.debug('Saving facts to {}'.format(filename))
-        self.environment.SaveFacts(filename)
+        self.environment.save(filename)
         
         if len(self.environment.DefinstancesList()) > 1: # There is 1 by default
             instance_filename = _get_instance_filename(filename)
@@ -119,7 +119,7 @@ class RuleEngine(object):
         """
         List the names of all the defined rules
         """
-        return [str(t).rsplit('::', 1)[1] for t in self.environment.RuleList()]
+        return [t.name for t in self.environment.rules()]
 
     def _wrap_clips_instance(self, instance):
         """
@@ -127,10 +127,10 @@ class RuleEngine(object):
         appropriate Fact/Class instance.
         """
         if isinstance(instance, clips.InstanceName):
-            instance = self.environment.FindInstance(instance)
-            return self.clips_types[str(instance.Class)](_clips_obj=instance)
+            instance = self.environment.find_instance(instance)
+            return self.clips_types[str(instance.instance_class.name)](_clips_obj=instance)
         else:
-            return self.clips_types[str(instance.Relation)](_clips_obj=instance)
+            return self.clips_types[str(instance.template.name)](_clips_obj=instance)
 
 
 def _get_instance_filename(fact_filename):

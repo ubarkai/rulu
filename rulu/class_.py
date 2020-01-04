@@ -2,14 +2,15 @@
 Basic wrapper for CLIPS Object-Oriented (COOL) constructs 
 """
 
-import clips
-from expr import FieldExpr, BaseExpr
-from slots import HasSlots
-from typedefs import RuleEngineType
-from utils import wrap_clips_errors
+import clips.classes
+from .expr import FieldExpr, BaseExpr
+from .slots import HasSlots
+from .typedefs import RuleEngineType
+from .utils import wrap_clips_errors, LispExpr
+
 
 class Class(HasSlots, RuleEngineType):
-    CLIPS_INSTANCE_TYPE = clips.Instance
+    CLIPS_INSTANCE_TYPE = clips.classes.Instance
     CLIPS_TYPE = 'INSTANCE'
             
     @classmethod
@@ -18,18 +19,20 @@ class Class(HasSlots, RuleEngineType):
         if cls is not Class:
             super(Class, cls)._build(engine)
             definition = '(is-a USER){}'.format(cls._slots)
-            cls._clips_type = engine.environment.BuildClass(cls._name, definition)
+            lisp = LispExpr('defclass', cls.__name__, definition)
+            engine.environment.build(str(lisp))
+            cls._clips_type = engine.environment.find_class(cls.__name__)
         
     def _create_clips_obj(self):
         return self._clips_type.BuildInstance()
 
     def _copy_clips_obj(self, obj):
-        return obj if hasattr(obj, '_Instance__env') else self._environment.Instance(obj)
+        return obj
     
     @classmethod
     def _from_clips_value(cls, x):
         if isinstance(x, clips.InstanceName):
-            return cls(_clips_obj=cls._environment.FindInstance(x))
+            return cls(_clips_obj=cls._environment.find_instance(x))
         else: # Instance
             return cls(_clips_obj=x)
     
@@ -37,15 +40,17 @@ class Class(HasSlots, RuleEngineType):
     def _isinstance(cls, x):
         return isinstance(x, cls)
     
+
 class InstanceField(FieldExpr):
     def __init__(self, _type):
-        super(InstanceField, self).__init__(_type)
-        for key, field in _type._fields.iteritems():
+        super().__init__(_type)
+        for key, field in _type._fields.items():
             setattr(self, key, InstanceMember(self, key, field))
             
+
 class InstanceMember(BaseExpr):
     def __init__(self, container, key, field):
-        super(InstanceMember, self).__init__(all_fields=[container])
+        super().__init__(all_fields=[container])
         self._container = container
         self._key = key
         self._field = field

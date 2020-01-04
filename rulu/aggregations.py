@@ -7,11 +7,12 @@ the rule engine execution and then aggregated in Python code afterwards.
 from bunch import Bunch
 from collections import defaultdict
 
-from expr import FieldExpr
-from fact import FactReference
-from utils import RuleEngineError
+from .expr import FieldExpr
+from .fact import FactReference
+from .utils import RuleEngineError
 
-class Aggregator(object):
+
+class Aggregator:
     def __init__(self, engine, template):
         self.engine = engine
         self.template = template
@@ -29,6 +30,7 @@ class Aggregator(object):
         """ Runs on each fact to be aggregated """
         raise NotImplementedError
 
+
 def grouping_aggregator(keys, func):
     """ 
     'Groupby' aggregator. Facts are collected to lists grouped by
@@ -44,15 +46,16 @@ def grouping_aggregator(keys, func):
             if self.finalized:
                 raise RuleEngineError('Aggregation failed')
             key = tuple(key(**kwargs) for key in keys)
-            value = kwargs.values()[0] if len(kwargs) == 1 else Bunch(kwargs)
+            value = list(kwargs.values())[0] if len(kwargs) == 1 else Bunch(kwargs)
             self.data[key].append(value)
             
         def finalize(self, assert_):
             super(GroupAggregator, self).finalize(assert_)
-            for key, group in self.data.iteritems():
+            for key, group in self.data.items():
                 func(group, assert_, *key)
         
     return GroupAggregator
+
 
 def _make_key(key):
     if isinstance(key, FieldExpr):

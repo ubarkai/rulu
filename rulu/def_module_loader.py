@@ -4,12 +4,14 @@ from importlib import import_module
 from threading import Lock
 from types import ModuleType
 
-from auto_salience import auto_set_salience
-from func import RuleFunc
-from slots import HasSlots
-from ruledef import RuleDef, params
-from rule import Rule
-from utils import logger
+from .auto_salience import auto_set_salience
+from .func import RuleFunc
+from .slots import HasSlots
+from .ruledef import RuleDef, params
+from .rule import Rule
+from .utils import logger
+import importlib
+
 
 class DefModuleLoader(object):
     def __init__(self, engine):
@@ -34,7 +36,7 @@ class DefModuleLoader(object):
             RuleFunc._set_cur_engine(self.engine)
             module = import_module(module_name, package)
             if module.__name__ in existing_modules:
-                reload(module)
+                importlib.reload(module)
             # TODO: Why are there non-named templates??
             templates_to_build = [x for x in HasSlots._all_subclasses if x._name is not None]
             rules_to_build = RuleDef._all_instances
@@ -64,7 +66,7 @@ class DefModuleLoader(object):
         by_salience = defaultdict(list)
         for ruledef in RuleDef._all_instances:
             by_salience[ruledef._rule.salience or 0].append(ruledef._rule)
-        for salience, rules in sorted(by_salience.iteritems()):
+        for salience, rules in sorted(by_salience.items()):
             self._add_debug_rule(salience, rules)
             
     def _add_debug_rule(self, salience, preceding_rules):

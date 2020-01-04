@@ -1,7 +1,6 @@
 import sys
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
-from os import path
 
 
 class PyTest(TestCommand):
@@ -18,13 +17,13 @@ class PyTest(TestCommand):
 
 setup(
     name='rulu',
-    version='0.1.3',
+    version='0.2',
     url='http://github.com/ubarkai/rulu',
     license='LGPL',
     author='Uri Barkai',
     author_email='ubarkai@gmail.com',
-    description='Python interface for building rule-based expert systems over PyCLIPS',
-    install_requires = ['bunch', 'pyclips'],
+    description='Python interface for building rule-based expert systems over clipspy',
+    install_requires = ['bunch', 'clipspy'],
     tests_require=['pytest'],
     extras_require={'testing': ['pytest']},
     cmdclass={'test': PyTest},
