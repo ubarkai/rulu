@@ -36,7 +36,8 @@ class RuleFunc(object):
         wrapper = self._wrapper_by_engine.get(self._cur_engine)
         if wrapper is None:
             wrapper = self._create_wrapper(self._cur_engine)
-            self._cur_engine.environment.define_function(wrapper)
+            if self._cur_engine is not None:
+                self._cur_engine.environment.define_function(wrapper)
         return PythonFuncExpr(wrapper.__name__, self.type, *args)
     
     def _create_wrapper(self, engine):
