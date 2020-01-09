@@ -4,8 +4,8 @@ the rule engine execution and then aggregated in Python code afterwards.
 """
 
 
-from bunch import Bunch
 from collections import defaultdict
+from munch import Munch
 
 from .expr import FieldExpr
 from .fact import FactReference
@@ -46,7 +46,7 @@ def grouping_aggregator(keys, func):
             if self.finalized:
                 raise RuleEngineError('Aggregation failed')
             key = tuple(key(**kwargs) for key in keys)
-            value = list(kwargs.values())[0] if len(kwargs) == 1 else Bunch(kwargs)
+            value = list(kwargs.values())[0] if len(kwargs) == 1 else Munch(kwargs)
             self.data[key].append(value)
             
         def finalize(self, assert_):

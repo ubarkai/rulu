@@ -23,7 +23,7 @@ setup(
     author='Uri Barkai',
     author_email='ubarkai@gmail.com',
     description='Python interface for building rule-based expert systems over clipspy',
-    install_requires = ['bunch', 'clipspy'],
+    install_requires = ['munch', 'clipspy'],
     tests_require=['pytest'],
     extras_require={'testing': ['pytest']},
     cmdclass={'test': PyTest},

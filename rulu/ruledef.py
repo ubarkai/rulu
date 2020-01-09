@@ -1,5 +1,5 @@
-from bunch import Bunch
 from functools import wraps
+from munch import Munch
 
 from .aggregations import grouping_aggregator
 from .expr import ConvertibleToExpr
@@ -81,7 +81,7 @@ def foreach(rule, *containers):
 
 
 # Parameters passed from outside world to rule defintions
-params = Bunch()
+params = Munch()
 
 
 def delayed_set(field, from_value, to_value):
