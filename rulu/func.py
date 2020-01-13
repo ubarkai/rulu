@@ -50,7 +50,7 @@ class RuleFunc(object):
             if self._last_error is not None:
                 return
             try:
-                args = [(engine._wrap_clips_instance(arg) if isinstance(arg, 
+                args = [(engine._wrap_clips_instance(arg) if isinstance(arg,
                     (clips.TemplateFact, clips.InstanceName)) else arg) for arg in args]
                 res = self.func(*args)
                 self._num_calls += 1
@@ -59,10 +59,9 @@ class RuleFunc(object):
                 return self.type._to_clips_value(res)
             except:
                 # Register error to be raised later by engine
-                cls = type(self)
                 type(self)._last_error = sys.exc_info()
                 # Abort CLIPS execution
-                engine.environment.Clear()
+                engine.environment.clear()
         wrapper.__name__ = self._counters.setdefault(self.func_name, UniqueIdCounter(self.func_name+'_')).next()
         return wrapper
     

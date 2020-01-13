@@ -76,7 +76,7 @@ class RuleEngine(object):
                 if fact.template.name == type_name)
     
     def clear(self):
-        self.environment.Clear()
+        self.environment.clear()
         
     def reset(self):
         """
@@ -84,7 +84,7 @@ class RuleEngine(object):
         2. Remove all facts from the fact-list
         3. Assert the facts from existing deffacts
         """
-        self.environment.Reset()
+        self.environment.reset()
         
     def load(self, filename):
         """
@@ -107,10 +107,10 @@ class RuleEngine(object):
         self.logger.debug('Saving facts to {}'.format(filename))
         self.environment.save(filename)
         
-        if len(self.environment.DefinstancesList()) > 1: # There is 1 by default
+        if len(self.environment.instances()) > 1: # There is 1 by default
             instance_filename = _get_instance_filename(filename)
             self.logger.debug('Saving instances to {}'.format(instance_filename))
-            self.environment.SaveInstances(instance_filename)
+            self.environment.save_instances(instance_filename)
         
     def register_clips_type(self, clips_type):
         self.clips_types[clips_type._name] = clips_type

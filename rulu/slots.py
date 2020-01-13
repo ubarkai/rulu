@@ -81,7 +81,7 @@ class HasSlots(object, metaclass=SlotsMeta):
         return clips_obj
 
     def _init_data(self):
-        return tuple(self._fields[key]._type._from_clips_value(self._clips_obj[key]) for key in self._ordered_fields)
+        return tuple(self._fields[key]._from_clips_value(self._clips_obj) for key in self._ordered_fields)
 
     def _create_clips_obj(self):
         raise NotImplementedError

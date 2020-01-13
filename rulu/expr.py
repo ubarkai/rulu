@@ -112,6 +112,13 @@ class FieldExpr(BaseExpr):
     def get_type(self):
         return self._type
 
+    def _from_clips_value(self, obj):
+        try:
+            value = obj[self.name]
+        except KeyError:
+            return self._type.DEFAULT
+        return self._type._from_clips_value(value)
+
 
 class IntegerField(FieldExpr): _type = Integer
 class NumberField(FieldExpr): _type = Number

@@ -16,7 +16,8 @@ class RuleEngineType(object):
     PYTHON_TYPE = None
     PYTHON_TYPE_CHECK = None
     CLIPS_TYPE = None
-    
+    DEFAULT = None
+
     @classmethod
     def _isinstance(cls, x):
         """ Check if argument is of the current type """
@@ -25,7 +26,7 @@ class RuleEngineType(object):
     @classmethod
     def _from_clips_value(cls, x):
         """ Convert from CLIPS value to Python value """
-        return cls.PYTHON_TYPE(x)
+        return cls.DEFAULT if x is None else cls.PYTHON_TYPE(x)
     
     @classmethod
     def _to_clips_value(cls, x):
@@ -37,7 +38,8 @@ class Integer(RuleEngineType):
     PYTHON_TYPE = int
     PYTHON_TYPE_CHECK = int
     CLIPS_TYPE = 'INTEGER'
-    
+    DEFAULT = 0
+
 
 class Boolean(Integer):
     PYTHON_TYPE = bool
@@ -45,7 +47,8 @@ class Boolean(Integer):
     CLIPS_TYPE = 'SYMBOL'
     TRUE = clips.Symbol('TRUE')
     FALSE = clips.Symbol('FALSE')
-    
+    DEFAULT = FALSE
+
     @classmethod
     def _to_clips_value(cls, x):
         if isinstance(x, clips.Symbol):
@@ -64,36 +67,24 @@ class Number(RuleEngineType):
     PYTHON_TYPE = float
     PYTHON_TYPE_CHECK = (int, float)
     CLIPS_TYPE = 'NUMBER'
-    
+    DEFAULT = 0.0
+
 
 class String(RuleEngineType):
     PYTHON_TYPE = str
     PYTHON_TYPE_CHECK = str
     CLIPS_TYPE = 'STRING'
-    
+    DEFAULT = ''
 
-class Unicode(RuleEngineType):
-    """
-    Unicode string.
-    PyCLIPS does not support Unicode values, so we take of the encoding/decoding here 
-    """
-    ENCODING = 'utf8'
-    PYTHON_TYPE = str
-    PYTHON_TYPE_CHECK = str
-    CLIPS_TYPE = 'STRING'
-    
-    @classmethod
-    def _to_clips_value(cls, x):
-        return x.encode(cls.ENCODING)
 
-    @classmethod
-    def _from_clips_value(cls, x):
-        return x.decode(cls.ENCODING)
-    
+class Unicode(String):
+    pass
+
 
 class Symbol(String):
     CLIPS_TYPE = 'SYMBOL'
-    
+    DEFAULT = ''
+
 
 class DateTime(RuleEngineType):
     """
@@ -104,6 +95,7 @@ class DateTime(RuleEngineType):
     PYTHON_TYPE = datetime
     PYTHON_TYPE_CHECK = datetime
     CLIPS_TYPE = 'INTEGER'
+    DEFAULT = datetime.fromtimestamp(0)
     
     @classmethod
     def _to_clips_value(cls, x):
@@ -121,10 +113,7 @@ class Multifield(RuleEngineType):
     PYTHON_TYPE = list
     PYTHON_TYPE_CHECK = Iterable
     CLIPS_TYPE = 'MULTIFIELD'
-     
-    @classmethod
-    def _to_clips_value(cls, x):
-        return clips.Multifield(x)
+    DEFAULT = ()
      
 
 class FactIndexType(RuleEngineType): pass
