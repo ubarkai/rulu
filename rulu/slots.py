@@ -68,6 +68,7 @@ class HasSlots(object, metaclass=SlotsMeta):
     def _init_values(self, **kwargs):
         clips_obj = self._create_clips_obj()
         # clips_obj.AssignSlotDefaults()
+        values = {}
         for key, value in kwargs.items():
             field = self._fields.get(key)
             if field is None:
@@ -77,7 +78,8 @@ class HasSlots(object, metaclass=SlotsMeta):
                                       format(self._name, key, field.get_type(), value))
             if isinstance(value, HasSlots):
                 value = value._clips_obj
-            clips_obj[key] = field._type._to_clips_value(value)
+            values[key] = field._type._to_clips_value(value)
+        clips_obj.modify_slots(**values)
         return clips_obj
 
     def _init_data(self):

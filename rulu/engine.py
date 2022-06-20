@@ -32,7 +32,6 @@ class RuleEngine(object):
         if not issubclass(fact_type, Fact):
             raise TypeError('{} is not a fact type.'.format(fact_type))
         fact = fact_type(**values)
-        fact._clips_obj.assertit()
         return fact
         
     def run(self):

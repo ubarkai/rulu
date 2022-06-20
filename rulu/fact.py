@@ -44,7 +44,7 @@ class Fact(HasSlots, metaclass=FactMeta):
         return cls._fact_expr
 
     def _create_clips_obj(self):
-        return self._clips_type.new_fact()
+        return self._clips_type.assert_fact()
 
     def _copy_clips_obj(self, obj):
         return obj # Old: obj if hasattr(obj, '_Fact__env') else self._environment.Fact(obj)
@@ -60,7 +60,6 @@ class Fact(HasSlots, metaclass=FactMeta):
             kwargs.setdefault(key, self._clips_obj[key])
         self._clips_obj.retract()
         self._clips_obj = self._init_values(**kwargs)
-        self._clips_obj.assertit()
         self._data = self._init_data()
 
     @classmethod

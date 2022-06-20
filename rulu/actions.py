@@ -45,12 +45,13 @@ class Assert(AssertOrUpdate):
     deducing its fields from the Assert parameters.
     """
 
-    def __init__(self, **data):
+    def __init__(self, target=None, **data):
         super().__init__(**data)
         self.rule = None
+        self.target = target
 
     def replace_fields(self, field_map):
-        res = Assert(**self._replace_fields(field_map))
+        res = Assert(target=self.target, **self._replace_fields(field_map))
         res.rule = self.rule
         return res
     
@@ -60,7 +61,7 @@ class Assert(AssertOrUpdate):
         self.rule = rule
 
         # Deduce fields for rule target
-        if rule.target_fields is None:
+        if rule.target is None and self.target is None and rule.target_fields is None:
             implied_fields = {key:value.get_type() for key, value in self.data.items()}
             rule.set_target_fields(**implied_fields)
         # Fields of input facts cannot be used directly in the Assert() clause.
@@ -71,7 +72,8 @@ class Assert(AssertOrUpdate):
         
     def to_lisp(self):
         field_values = self._field_values_to_lisp()
-        return LispExpr('assert', LispExpr(self.rule.get_target_name(), *field_values))
+        target_name = self.target._name if self.target is not None else self.rule.get_target_name()
+        return LispExpr('assert', LispExpr(target_name, *field_values))
 
     def __str__(self):
         return 'Assert({})'.format(', '.join('{}={}'.format(k, v) for k, v in sorted(self.data.items())))

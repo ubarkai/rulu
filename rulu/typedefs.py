@@ -114,7 +114,14 @@ class Multifield(RuleEngineType):
     PYTHON_TYPE_CHECK = Iterable
     CLIPS_TYPE = 'MULTIFIELD'
     DEFAULT = ()
-     
+
+    @classmethod
+    def _from_clips_value(cls, x):
+        if isinstance(x, str) or not isinstance(x, Iterable):
+            return x,
+        else:
+            return tuple(x)
+
 
 class FactIndexType(RuleEngineType): pass
 
