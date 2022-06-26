@@ -1,10 +1,9 @@
-====
 Rulu
 ====
 
 Rulu provides a Pythonic, declarative interface for building rule-based expert systems. 
 
-Rulu is implemented over [PyCLIPS](http://pyclips.sourceforge.net/web/), the Python wrapper of the [CLIPS](http://http://clipsrules.sourceforge.net) expert system library.  
+Rulu is implemented over [clipspy](https://github.com/noxdafox/clipspy), the Python wrapper of the [CLIPS](http://http://clipsrules.sourceforge.net) expert system library.  
 
 Installation
 ============
