@@ -66,8 +66,6 @@ class HasSlots(object, metaclass=SlotsMeta):
         self._data = self._init_data()
 
     def _init_values(self, **kwargs):
-        clips_obj = self._create_clips_obj()
-        # clips_obj.AssignSlotDefaults()
         values = {}
         for key, value in kwargs.items():
             field = self._fields.get(key)
@@ -79,13 +77,13 @@ class HasSlots(object, metaclass=SlotsMeta):
             if isinstance(value, HasSlots):
                 value = value._clips_obj
             values[key] = field._type._to_clips_value(value)
-        clips_obj.modify_slots(**values)
+        clips_obj = self._create_clips_obj(**values)
         return clips_obj
 
     def _init_data(self):
         return tuple(self._fields[key]._from_clips_value(self._clips_obj) for key in self._ordered_fields)
 
-    def _create_clips_obj(self):
+    def _create_clips_obj(self, **kwargs):
         raise NotImplementedError
     
     def _copy_clips_obj(self, existing_clips_obj):

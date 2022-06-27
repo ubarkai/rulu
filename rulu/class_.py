@@ -23,8 +23,8 @@ class Class(HasSlots, RuleEngineType):
             engine.environment.build(str(lisp))
             cls._clips_type = engine.environment.find_class(cls.__name__)
         
-    def _create_clips_obj(self):
-        return self._clips_type.BuildInstance()
+    def _create_clips_obj(self, **kwargs):
+        return self._clips_type.BuildInstance(**kwargs)
 
     def _copy_clips_obj(self, obj):
         return obj

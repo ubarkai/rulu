@@ -43,8 +43,8 @@ class Fact(HasSlots, metaclass=FactMeta):
             cls._fact_expr = FactExpr(cls)
         return cls._fact_expr
 
-    def _create_clips_obj(self):
-        return self._clips_type.assert_fact()
+    def _create_clips_obj(self, **kwargs):
+        return self._clips_type.assert_fact(**kwargs)
 
     def _copy_clips_obj(self, obj):
         return obj # Old: obj if hasattr(obj, '_Fact__env') else self._environment.Fact(obj)
