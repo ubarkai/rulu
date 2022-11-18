@@ -73,7 +73,7 @@ Notes:
 6. In the arithmetic expression ``IsGrandfatherOf.degree+1``, it is important
    to note that the actual calculation will not run in Python. In fact,
    this example contains **pure CLIPS rules** in the sense that **no Python code** 
-   will run during rule engine execution. the Instead, Rulu will "compile" these rule 
+   will run during rule engine execution. Instead, Rulu will "compile" these rule 
    definitions to CLIPS code, and CLIPS will take care of the entire run. This is great
    for large data sets because CLIPS (written in C) is **by far** more efficient than
    Python.   
